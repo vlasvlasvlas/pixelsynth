@@ -37,6 +37,7 @@
     settingsDrawer: document.querySelector("#settingsDrawer"),
     infoPanel: document.querySelector("#infoPanel"),
     backdrop: document.querySelector("#backdrop"),
+    autoRandomButton: document.querySelector("#autoRandomButton"),
     randomButton: document.querySelector("#randomButton"),
     clearButton: document.querySelector("#clearButton"),
     addBallButton: document.querySelector("#addBallButton"),
@@ -44,6 +45,8 @@
     gridSizeValue: document.querySelector("#gridSizeValue"),
     launchPower: document.querySelector("#launchPower"),
     launchPowerValue: document.querySelector("#launchPowerValue"),
+    autoRandomInterval: document.querySelector("#autoRandomInterval"),
+    autoRandomIntervalValue: document.querySelector("#autoRandomIntervalValue"),
     ballRadius: document.querySelector("#ballRadius"),
     ballRadiusValue: document.querySelector("#ballRadiusValue"),
     bugSpeed: document.querySelector("#bugSpeed"),
@@ -85,6 +88,9 @@
     selectedColor: 0,
     mode: "pencil",
     running: true,
+    autoRandom: false,
+    autoRandomInterval: 3.0,
+    autoRandomTimer: 0,
     launchPower: 1.25,
     radius: 0.48,
     bounciness: 1,
@@ -412,6 +418,13 @@
     lastFrame = now;
 
     if (state.running) {
+      if (state.autoRandom) {
+        state.autoRandomTimer += dt;
+        if (state.autoRandomTimer >= state.autoRandomInterval) {
+          state.autoRandomTimer = 0;
+          generateRandomDrawing({ resetBalls: true, resetBugs: true, spawnIfEmpty: true });
+        }
+      }
       updatePhysics(dt);
     }
 
@@ -1412,6 +1425,7 @@
     state.bounciness = clamp(Number(el.bounciness.value), 0, 1.25);
     state.drag = clamp(Number(el.dragAmount.value), 0, 8);
     state.substeps = clampInt(Number(el.substeps.value), 1, 16);
+    if (el.autoRandomInterval) state.autoRandomInterval = clamp(Number(el.autoRandomInterval.value), 1, 20);
     state.bugSpeed = clamp(Number(el.bugSpeed.value), 0.25, 3);
     state.bugLife = clampInt(Number(el.bugLife.value), 1, 24);
     state.root = clampInt(Number(el.rootNote.value), 0, 11);
@@ -1441,6 +1455,10 @@
     el.substeps.value = String(state.substeps);
     el.bugSpeed.value = String(state.bugSpeed);
     el.bugSpeedValue.value = state.bugSpeed.toFixed(2);
+    if (el.autoRandomInterval) {
+      el.autoRandomInterval.value = state.autoRandomInterval.toFixed(1);
+      el.autoRandomIntervalValue.value = state.autoRandomInterval.toFixed(1);
+    }
     el.bugLife.value = String(state.bugLife);
     el.rootNote.value = String(state.root);
     el.octave.value = String(state.octave);
@@ -1472,7 +1490,7 @@
   }
 
   function updateRunButton() {
-    el.runButton.textContent = state.running ? "Pause" : "Run";
+    el.runButton.textContent = state.running ? "Pausar" : "Correr";
   }
 
   function bindControls() {
@@ -1499,7 +1517,14 @@
       state.running = !state.running;
       updateRunButton();
     });
-    el.randomButton.addEventListener("click", generateRandomDrawing);
+    
+    el.autoRandomButton?.addEventListener("click", () => {
+      state.autoRandom = !state.autoRandom;
+      state.autoRandomTimer = 0;
+      el.autoRandomButton.classList.toggle("active", state.autoRandom);
+    });
+
+    el.randomButton.addEventListener("click", () => generateRandomDrawing({ resetBalls: true, resetBugs: true, spawnIfEmpty: true }));
     el.clearButton.addEventListener("click", () => {
       initGrid();
       state.balls = [];
@@ -1526,6 +1551,7 @@
       el.substeps,
       el.bugSpeed,
       el.bugLife,
+      el.autoRandomInterval,
       el.rootNote,
       el.octave,
       el.scaleMode,
@@ -1551,10 +1577,6 @@
 
       if (event.key === "Escape") {
         closeOverlays();
-      } else if (event.key === " ") {
-        event.preventDefault();
-        state.running = !state.running;
-        updateRunButton();
       } else if (event.key === "1") {
         state.mode = "draw";
         updateModeButtons();
