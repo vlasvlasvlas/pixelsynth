@@ -34,6 +34,7 @@
           <button id="settingsButton" class="menu-btn" type="button"><u>C</u>onfiguración</button>
           <button id="clearButton" class="menu-btn" type="button"><u>L</u>impiar</button>
           <button id="randomButton" class="menu-btn" type="button"><u>R</u>andom</button>
+          <button id="autoRandomButton" class="menu-btn" type="button"><u>A</u>uto-Random</button>
           <button id="runButton" class="menu-btn" type="button"><u>P</u>ausar</button>
           <button id="infoButton" class="menu-btn" type="button"><u>A</u>yuda</button>
         </div>
@@ -47,7 +48,7 @@
                 <button class="tool-button" data-mode="line" type="button" title="Línea (Line)">➖</button>
                 <button class="tool-button" data-mode="circle" type="button" title="Círculo (Circle)">⭕</button>
                 <div class="toolbar-separator"></div>
-                <button class="tool-button" data-mode="launch" type="button" title="Lanzar Pelota (Ball)">🎾</button>
+                <button class="tool-button" data-mode="launch" type="button" title="Lanzar Pelota (Ball)">⚫</button>
                 <div class="toolbar-separator"></div>
                 <button class="tool-button" data-mode="bug-wanderer" type="button" title="Bicho Errante (Wanderer)">🐛</button>
                 <button class="tool-button" data-mode="bug-coward" type="button" title="Bicho Cobarde (Coward)">🏃</button>
@@ -112,6 +113,11 @@
                 <label>Fricción<input id="dragAmount" type="number" min="0" max="8" step="0.1" value="0.0"></label>
                 <label>Substeps<input id="substeps" type="number" min="1" max="16" step="1" value="4"></label>
               </div>
+              <div class="control-row" style="margin-top: 12px;">
+                <label for="autoRandomInterval">Auto-Random Intervalo (s)</label>
+                <output id="autoRandomIntervalValue">3.0</output>
+              </div>
+              <input id="autoRandomInterval" type="range" min="1" max="20" step="0.5" value="3.0">
               <div style="margin-top: 8px;">
                  <button id="addBallButton" class="wide-button action-button" type="button">Añadir Pelota</button>
               </div>
