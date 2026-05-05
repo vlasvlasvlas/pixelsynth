@@ -1,6 +1,8 @@
 # Pixelsynth Paint
 
-Un instrumento audiovisual colaborativo y generativo, directamente desde tu navegador. **Pixelsynth Paint** es una versión web rediseñada con una estética retro inspirada en **Windows 3.1** y **MS Paint**.
+**Pixelsynth Paint** es un lienzo de pixel art musical y un emulador interactivo de creación sonora azarosa. Transforma tus dibujos y patrones visuales en secuencias musicales dinámicas dentro de una interfaz retro inspirada en el legendario **MS Paint** de **Windows 3.1**.
+
+Es un instrumento audiovisual autónomo y generativo que corre directamente en tu navegador, diseñado para explorar la relación física entre el espacio, los colores (notas) y las colisiones.
 
 El proyecto es una adaptación fiel y creativa de la idea original en Max for Live, con el beneficio de ser completamente accesible sin necesidad de instalar software adicional.
 
