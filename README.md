@@ -26,6 +26,12 @@ En el botón `Configuración` (menú superior) podrás controlar:
 * **Motor de Audio:** Presets de sintetizador, volumen, tono y efectos espaciales de Delay o Reverb en tiempo real.
 * **Ajustes visuales:** Control del tamaño de la cuadrícula interactiva.
 
+## 🔊 Manual de Presets de Sonido
+
+Si quieres crear tus propios sonidos o editar los existentes en `sound-presets.json`, consulta el manual completo:
+
+- [Manual de presets de sonido (`SOUND_PRESETS.md`)](./SOUND_PRESETS.md)
+
 ## 🚀 Despliegue
 
 Este proyecto utiliza **GitHub Pages** para que puedas usarlo directamente de forma online, y no requiere servidor backend ya que todas las lógicas y el Web Audio se ejecutan íntegramente en el cliente (tu navegador).

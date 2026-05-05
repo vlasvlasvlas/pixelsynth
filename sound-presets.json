@@ -61,6 +61,144 @@
         { "ratio": 4.012, "gain": 0.14, "type": "sine", "detune": -8 },
         { "ratio": 6.01, "gain": 0.06, "type": "sine", "detune": 4 }
       ]
+    },
+    "moogBass": {
+      "label": "Moog bass",
+      "attack": 0.006,
+      "decay": 0.09,
+      "decayLevel": 0.58,
+      "release": 0.95,
+      "rowRelease": 0.34,
+      "gain": 0.18,
+      "q": 1.05,
+      "toneOpen": 6.8,
+      "toneClose": 1.9,
+      "noiseTime": 0.01,
+      "noiseGain": 0.01,
+      "partials": [
+        { "ratio": 1, "gain": 1, "type": "sawtooth", "detune": -3 },
+        { "ratio": 1.002, "gain": 0.9, "type": "sawtooth", "detune": 3 },
+        { "ratio": 2, "gain": 0.4, "type": "square", "detune": 0 },
+        { "ratio": 3, "gain": 0.18, "type": "triangle", "detune": 0 }
+      ]
+    },
+    "classic808Kick": {
+      "label": "808 kick",
+      "attack": 0.001,
+      "decay": 0.03,
+      "decayLevel": 0.78,
+      "release": 1.2,
+      "rowRelease": 0.28,
+      "gain": 0.22,
+      "q": 0.42,
+      "toneOpen": 2.6,
+      "toneClose": 0.85,
+      "noiseTime": 0.02,
+      "noiseGain": 0.012,
+      "partials": [
+        { "ratio": 0.5, "gain": 1, "type": "sine", "detune": 0 },
+        { "ratio": 1, "gain": 0.35, "type": "sine", "detune": 0 },
+        { "ratio": 1.5, "gain": 0.12, "type": "triangle", "detune": 0 }
+      ]
+    },
+    "junoPad": {
+      "label": "Juno pad",
+      "attack": 0.03,
+      "decay": 0.35,
+      "decayLevel": 0.82,
+      "release": 2.8,
+      "rowRelease": 1.15,
+      "gain": 0.11,
+      "q": 0.66,
+      "toneOpen": 11.8,
+      "toneClose": 2.8,
+      "noiseTime": 0.008,
+      "noiseGain": 0.004,
+      "partials": [
+        { "ratio": 1, "gain": 1, "type": "sawtooth", "detune": -6 },
+        { "ratio": 1.002, "gain": 0.92, "type": "sawtooth", "detune": 6 },
+        { "ratio": 2, "gain": 0.32, "type": "triangle", "detune": 0 },
+        { "ratio": 4, "gain": 0.09, "type": "sine", "detune": 0 }
+      ]
+    },
+    "dx7Bell": {
+      "label": "DX bell",
+      "attack": 0.002,
+      "decay": 0.05,
+      "decayLevel": 0.36,
+      "release": 2.3,
+      "rowRelease": 0.95,
+      "gain": 0.125,
+      "q": 1.6,
+      "toneOpen": 17,
+      "toneClose": 5.4,
+      "noiseTime": 0.004,
+      "noiseGain": 0.002,
+      "partials": [
+        { "ratio": 1, "gain": 1, "type": "sine", "detune": 0 },
+        { "ratio": 2.71, "gain": 0.62, "type": "sine", "detune": 0 },
+        { "ratio": 3.99, "gain": 0.38, "type": "sine", "detune": 0 },
+        { "ratio": 6.23, "gain": 0.18, "type": "sine", "detune": 0 }
+      ]
+    },
+    "acid303": {
+      "label": "Acid 303",
+      "attack": 0.003,
+      "decay": 0.06,
+      "decayLevel": 0.43,
+      "release": 0.78,
+      "rowRelease": 0.24,
+      "gain": 0.15,
+      "q": 2.1,
+      "toneOpen": 9.8,
+      "toneClose": 2.2,
+      "noiseTime": 0.006,
+      "noiseGain": 0.003,
+      "partials": [
+        { "ratio": 1, "gain": 1, "type": "sawtooth", "detune": 0 },
+        { "ratio": 2, "gain": 0.33, "type": "square", "detune": 0 },
+        { "ratio": 3, "gain": 0.12, "type": "triangle", "detune": 0 }
+      ]
+    },
+    "polyBrass": {
+      "label": "Poly brass",
+      "attack": 0.012,
+      "decay": 0.11,
+      "decayLevel": 0.67,
+      "release": 1.05,
+      "rowRelease": 0.42,
+      "gain": 0.13,
+      "q": 0.95,
+      "toneOpen": 10.2,
+      "toneClose": 2.4,
+      "noiseTime": 0.01,
+      "noiseGain": 0.006,
+      "partials": [
+        { "ratio": 1, "gain": 1, "type": "sawtooth", "detune": -4 },
+        { "ratio": 1.004, "gain": 0.82, "type": "square", "detune": 4 },
+        { "ratio": 2, "gain": 0.31, "type": "triangle", "detune": 0 },
+        { "ratio": 4, "gain": 0.1, "type": "sine", "detune": 0 }
+      ]
+    },
+    "wavetableLead": {
+      "label": "Wavetable lead",
+      "attack": 0.004,
+      "decay": 0.04,
+      "decayLevel": 0.52,
+      "release": 0.88,
+      "rowRelease": 0.3,
+      "gain": 0.14,
+      "q": 1.24,
+      "toneOpen": 14.5,
+      "toneClose": 3.6,
+      "noiseTime": 0.007,
+      "noiseGain": 0.005,
+      "partials": [
+        { "ratio": 1, "gain": 1, "type": "sawtooth", "detune": -2 },
+        { "ratio": 1.006, "gain": 0.58, "type": "triangle", "detune": 2 },
+        { "ratio": 2.5, "gain": 0.36, "type": "sine", "detune": 0 },
+        { "ratio": 5.2, "gain": 0.12, "type": "square", "detune": 0 }
+      ]
     }
   }
 }
