@@ -422,7 +422,7 @@
         state.autoRandomTimer += dt;
         if (state.autoRandomTimer >= state.autoRandomInterval) {
           state.autoRandomTimer = 0;
-          generateRandomDrawing({ resetBalls: true, resetBugs: true, spawnIfEmpty: true });
+          generateRandomDrawing({ resetBalls: false, resetBugs: false, spawnIfEmpty: false });
         }
       }
       updatePhysics(dt);
@@ -1524,7 +1524,7 @@
       el.autoRandomButton.classList.toggle("active", state.autoRandom);
     });
 
-    el.randomButton.addEventListener("click", () => generateRandomDrawing({ resetBalls: true, resetBugs: true, spawnIfEmpty: true }));
+    el.randomButton.addEventListener("click", () => generateRandomDrawing({ resetBalls: false, resetBugs: false, spawnIfEmpty: false }));
     el.clearButton.addEventListener("click", () => {
       initGrid();
       state.balls = [];
