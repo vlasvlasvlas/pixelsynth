@@ -1,0 +1,460 @@
+:root {
+  color-scheme: light;
+  --win-bg: #008080;
+  --win-face: #c0c0c0;
+  --win-face-light: #dfdfdf;
+  --win-text: #000000;
+  --win-title: #000080;
+  --win-title-text: #ffffff;
+  --win-highlight: #ffffff;
+  --win-shadow: #808080;
+  --win-dark-shadow: #000000;
+  
+  --border-outset: 
+    inset 1px 1px var(--win-highlight),
+    inset -1px -1px var(--win-dark-shadow),
+    inset 2px 2px var(--win-face-light),
+    inset -2px -2px var(--win-shadow);
+    
+  --border-inset: 
+    inset 1px 1px var(--win-shadow),
+    inset -1px -1px var(--win-highlight),
+    inset 2px 2px var(--win-dark-shadow),
+    inset -2px -2px var(--win-face-light);
+    
+  --border-window:
+    inset 1px 1px var(--win-highlight),
+    inset -1px -1px var(--win-dark-shadow),
+    inset 2px 2px var(--win-face-light),
+    inset -2px -2px var(--win-shadow),
+    0 0 0 1px var(--win-dark-shadow);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--win-bg);
+  color: var(--win-text);
+  font-family: "MS Sans Serif", "Microsoft Sans Serif", Tahoma, sans-serif;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+
+button, input, select {
+  font: inherit;
+  color: var(--win-text);
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+  background: var(--win-face);
+  box-shadow: var(--border-outset);
+  padding: 4px 8px;
+}
+
+button:active, button.active {
+  box-shadow: var(--border-inset);
+  padding: 5px 7px 3px 9px; /* Desplaza el contenido al hundirse */
+}
+
+button:focus-visible, input:focus-visible, select:focus-visible, canvas:focus-visible {
+  outline: 1px dotted var(--win-text);
+  outline-offset: -4px;
+}
+
+/* Escritorio */
+.desktop {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+/* Ventanas Clásicas */
+.win-window {
+  background: var(--win-face);
+  box-shadow: var(--border-window);
+  padding: 2px;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-shell {
+  width: 100%;
+  max-width: 1024px;
+  height: calc(100vh - 32px);
+}
+
+.win-titlebar {
+  background: var(--win-title);
+  color: var(--win-title-text);
+  padding: 2px 2px 2px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 14px;
+  height: 24px;
+}
+
+.win-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.win-icon {
+  width: 14px;
+  height: 14px;
+  background: var(--win-face);
+  box-shadow: var(--border-outset);
+  display: inline-block;
+}
+
+.win-controls {
+  display: flex;
+  gap: 2px;
+}
+
+.win-btn {
+  width: 20px;
+  height: 20px;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.win-btn:active {
+  padding: 1px 0 0 1px;
+}
+
+/* Menubar */
+.win-menubar {
+  display: flex;
+  padding: 2px;
+  border-bottom: 1px solid var(--win-shadow);
+  margin-bottom: 2px;
+}
+
+.menu-btn {
+  background: var(--win-face);
+  box-shadow: var(--border-outset);
+  padding: 4px 12px;
+  font-weight: bold;
+  margin-right: 2px;
+}
+
+.menu-btn:hover {
+  /* En win3.1 el hover no cambia el color de los botones normales */
+}
+
+.menu-btn:active {
+  padding: 5px 11px 3px 13px; /* Hundir al hacer click */
+  box-shadow: var(--border-inset);
+  background: var(--win-face);
+  color: var(--win-text);
+}
+
+.win-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  gap: 4px;
+  min-height: 0;
+}
+
+/* Tool Buttons */
+.project-stage {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.workspace {
+  display: flex;
+  width: 100%;
+  gap: 4px;
+  align-items: stretch;
+}
+
+/* Toolbar */
+.toolbar {
+  width: 48px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--win-face);
+  box-shadow: var(--border-outset);
+}
+
+.tool-button {
+  width: 100%;
+  aspect-ratio: 1;
+  font-size: 18px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tool-button.active {
+  background: var(--win-face-light);
+  /* En win3.1 un botón activo de toolbar tiene textura de dither o queda hundido */
+}
+
+.toolbar-separator {
+  height: 2px;
+  background: var(--win-shadow);
+  border-bottom: 1px solid var(--win-highlight);
+  margin: 4px 2px;
+}
+
+/* Canvas Area */
+.canvas-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.canvas-container {
+  flex: 1;
+  background: #ffffff;
+  box-shadow: var(--border-inset);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 2px;
+}
+
+#stage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  cursor: crosshair;
+  background: #fff;
+}
+
+/* Palette */
+.palette-strip {
+  padding: 4px;
+  background: var(--win-face);
+  box-shadow: var(--border-outset);
+}
+
+.palette {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+}
+
+.swatch-button {
+  height: 36px;
+  box-shadow: var(--border-inset);
+  border: 1px solid var(--win-dark-shadow);
+  padding: 0;
+  position: relative;
+}
+
+.swatch-button.active {
+  box-shadow: 
+    inset 2px 2px #000, 
+    inset -2px -2px #000,
+    inset 3px 3px #fff,
+    inset -3px -3px #fff;
+  padding: 0;
+}
+
+/* Status Bar */
+.win-statusbar {
+  display: flex;
+  margin-top: 2px;
+  box-shadow: var(--border-inset);
+  padding: 2px;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.status-panel {
+  box-shadow: var(--border-inset);
+  padding: 2px 6px;
+  flex: 1;
+}
+
+/* Drawers & Dialogs */
+.settings-drawer {
+  position: absolute;
+  top: 50px;
+  right: 24px;
+  width: 320px;
+  max-height: calc(100vh - 100px);
+  z-index: 50;
+  display: none;
+}
+
+.settings-drawer.open {
+  display: flex;
+}
+
+.drawer-body {
+  overflow-y: auto;
+  padding: 8px;
+}
+
+fieldset.config-section {
+  border: 1px solid var(--win-shadow);
+  border-radius: 0;
+  padding: 8px;
+  margin: 0 0 8px 0;
+  box-shadow: 1px 1px var(--win-highlight);
+}
+
+legend {
+  padding: 0 4px;
+}
+
+.control-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.field-grid label {
+  display: flex;
+  flex-direction: column;
+}
+
+input[type="range"] {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.win-input {
+  box-shadow: var(--border-inset);
+  border: 0;
+  padding: 2px 4px;
+  background: #ffffff;
+}
+
+.wide-button {
+  width: 100%;
+}
+
+.config-note {
+  font-size: 11px;
+  margin-top: 8px;
+}
+
+.info-panel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  z-index: 60;
+  display: none;
+}
+
+.info-panel.open {
+  display: flex;
+}
+
+.info-card {
+  padding: 16px;
+  background: var(--win-face);
+}
+
+.info-card p {
+  margin: 0 0 12px 0;
+}
+
+.backdrop {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .desktop {
+    padding: 0;
+  }
+  .app-shell {
+    height: 100vh;
+  }
+  .workspace {
+    flex-direction: column;
+  }
+  .toolbar {
+    width: 100%;
+    flex-direction: row;
+    height: auto;
+    overflow-x: auto;
+  }
+  .tool-button {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+  }
+  .win-menubar {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
+  }
+  .menu-btn {
+    flex: 1 1 auto;
+    font-size: 12px;
+    padding: 4px 6px;
+  }
+  .settings-drawer {
+    right: 0;
+    top: 24px;
+    width: 100%;
+    max-height: calc(100vh - 24px);
+  }
+  .info-panel {
+    width: 95%;
+  }
+  .win-titlebar {
+    font-size: 12px;
+  }
+  .palette {
+    gap: 2px;
+  }
+}
+
+.swatch-button span {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  background: var(--win-face);
+  color: var(--win-text);
+  font-size: 10px;
+  font-weight: bold;
+  padding: 1px 2px;
+  border: 1px solid var(--win-dark-shadow);
+  box-shadow: 1px 1px var(--win-highlight);
+  pointer-events: none;
+}

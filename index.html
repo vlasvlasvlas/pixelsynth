@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>pixelsynth</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="desktop">
+      <main class="app-shell win-window" aria-label="pixelsynth">
+        <header class="win-titlebar">
+          <div class="win-title">
+            <span class="win-icon"></span>
+            Pixelsynth - Paint
+          </div>
+          <div class="win-controls">
+            <button id="fullscreenButton" class="win-btn" type="button" title="Pantalla Completa">⛶</button>
+          </div>
+        </header>
+
+        <div class="win-menubar">
+          <button id="settingsButton" class="menu-btn" type="button"><u>C</u>onfiguración</button>
+          <button id="clearButton" class="menu-btn" type="button"><u>L</u>impiar</button>
+          <button id="randomButton" class="menu-btn" type="button"><u>R</u>andom</button>
+          <button id="runButton" class="menu-btn" type="button"><u>P</u>ausar</button>
+          <button id="infoButton" class="menu-btn" type="button"><u>A</u>yuda</button>
+        </div>
+
+        <div class="win-content">
+          <section class="project-stage">
+            <div class="workspace">
+              <div class="toolbar win-panel" role="group" aria-label="herramientas de dibujo">
+                <button class="tool-button active" data-mode="pencil" type="button" title="Lápiz (Pencil)">✏️</button>
+                <button class="tool-button" data-mode="bucket" type="button" title="Balde (Fill)">🪣</button>
+                <button class="tool-button" data-mode="line" type="button" title="Línea (Line)">➖</button>
+                <button class="tool-button" data-mode="circle" type="button" title="Círculo (Circle)">⭕</button>
+                <div class="toolbar-separator"></div>
+                <button class="tool-button" data-mode="launch" type="button" title="Lanzar Pelota (Ball)">🎾</button>
+                <div class="toolbar-separator"></div>
+                <button class="tool-button" data-mode="bug-wanderer" type="button" title="Bicho Errante (Wanderer)">🐛</button>
+                <button class="tool-button" data-mode="bug-coward" type="button" title="Bicho Cobarde (Coward)">🏃</button>
+                <button class="tool-button" data-mode="bug-glutton" type="button" title="Bicho Glotón (Glutton)">🤤</button>
+              </div>
+
+              <div class="canvas-area">
+                <div class="canvas-container win-inset">
+                  <canvas id="stage" width="960" height="960" aria-label="grid de dibujo"></canvas>
+                </div>
+                <div class="palette-strip win-panel" aria-label="paleta de colores">
+                  <div id="palette" class="palette"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <aside id="settingsDrawer" class="settings-drawer win-window" aria-label="configuracion" aria-hidden="true">
+          <div class="win-titlebar">
+            <div class="win-title">Configuración</div>
+            <button id="closeSettingsButton" class="win-btn" type="button">×</button>
+          </div>
+
+          <div class="drawer-body win-content">
+            <fieldset class="config-section">
+              <legend>Bichos (IA)</legend>
+              <div class="control-row">
+                <label for="bugSpeed">Velocidad</label>
+                <output id="bugSpeedValue">1.00</output>
+              </div>
+              <input id="bugSpeed" type="range" min="0.25" max="3" step="0.05" value="1.00">
+              <div class="field-grid">
+                <label>Vida<input id="bugLife" type="number" min="1" max="24" step="1" value="10"></label>
+                <button id="clearBugsButton" class="wide-button action-button" type="button">Limpiar Bichos</button>
+              </div>
+              <p class="config-note">Los bichos tienen personalidad: Errante, Cobarde o Glotón.</p>
+            </fieldset>
+
+            <fieldset class="config-section">
+              <legend>Grid & Físicas</legend>
+              <div class="control-row">
+                <label for="gridSize">Tamaño de cuadrícula</label>
+                <output id="gridSizeValue">16</output>
+              </div>
+              <input id="gridSize" type="range" min="12" max="64" step="1" value="16">
+
+              <div class="control-row">
+                <label for="launchPower">Velocidad de pelota</label>
+                <output id="launchPowerValue">1.25</output>
+              </div>
+              <input id="launchPower" type="range" min="0.15" max="1.8" step="0.01" value="1.25">
+
+              <div class="control-row">
+                <label for="ballRadius">Radio de pelota</label>
+                <output id="ballRadiusValue">0.48</output>
+              </div>
+              <input id="ballRadius" type="range" min="0.12" max="0.8" step="0.01" value="0.48">
+
+              <div class="field-grid">
+                <label>Rebote<input id="bounciness" type="number" min="0" max="1.25" step="0.01" value="1.00"></label>
+                <label>Fricción<input id="dragAmount" type="number" min="0" max="8" step="0.1" value="0.0"></label>
+                <label>Substeps<input id="substeps" type="number" min="1" max="16" step="1" value="4"></label>
+              </div>
+              <div style="margin-top: 8px;">
+                 <button id="addBallButton" class="wide-button action-button" type="button">Añadir Pelota</button>
+              </div>
+            </fieldset>
+
+            <fieldset class="config-section">
+              <legend>Instrumentos</legend>
+              <label>Preset
+                <select id="instrumentPreset" class="win-input">
+                  <option value="softPiano">Soft piano</option>
+                  <option value="brightPiano">Bright piano</option>
+                  <option value="harp">Harp pluck</option>
+                </select>
+              </label>
+
+              <div class="field-grid">
+                <label>Root
+                  <select id="rootNote" class="win-input">
+                    <option value="0">C</option><option value="1">C#</option><option value="2">D</option><option value="3">D#</option>
+                    <option value="4">E</option><option value="5">F</option><option value="6">F#</option><option value="7">G</option>
+                    <option value="8">G#</option><option value="9">A</option><option value="10">A#</option><option value="11">B</option>
+                  </select>
+                </label>
+                <label>Octave<input id="octave" class="win-input" type="number" min="1" max="7" step="1" value="4"></label>
+              </div>
+
+              <label>Scale
+                <select id="scaleMode" class="win-input">
+                  <option value="original">Original</option>
+                  <option value="major">Major</option>
+                  <option value="minor">Minor</option>
+                  <option value="pentatonic">Pentatonic</option>
+                  <option value="chromatic">Chromatic</option>
+                </select>
+              </label>
+
+              <div class="control-row">
+                <label for="volume">Volume</label>
+                <output id="volumeValue">0.70</output>
+              </div>
+              <input id="volume" type="range" min="0" max="1" step="0.01" value="0.70">
+
+              <div class="control-row">
+                <label for="toneAmount">Tone</label>
+                <output id="toneAmountValue">0.58</output>
+              </div>
+              <input id="toneAmount" type="range" min="0" max="1" step="0.01" value="0.58">
+            </fieldset>
+
+            <fieldset class="config-section">
+              <legend>Delay & Reverb</legend>
+              <div class="control-row">
+                <label for="reverbAmount">Reverb mix</label>
+                <output id="reverbAmountValue">0.32</output>
+              </div>
+              <input id="reverbAmount" type="range" min="0" max="1" step="0.01" value="0.32">
+
+              <div class="control-row">
+                <label for="reverbSize">Reverb size</label>
+                <output id="reverbSizeValue">0.62</output>
+              </div>
+              <input id="reverbSize" type="range" min="0.1" max="1" step="0.01" value="0.62">
+
+              <div class="control-row">
+                <label for="delayAmount">Delay mix</label>
+                <output id="delayAmountValue">0.14</output>
+              </div>
+              <input id="delayAmount" type="range" min="0" max="1" step="0.01" value="0.14">
+
+              <div class="control-row">
+                <label for="delayTime">Delay time (s)</label>
+                <output id="delayTimeValue">0.28</output>
+              </div>
+              <input id="delayTime" type="range" min="0.04" max="1.2" step="0.01" value="0.28">
+
+              <div class="control-row">
+                <label for="delayFeedback">Feedback</label>
+                <output id="delayFeedbackValue">0.34</output>
+              </div>
+              <input id="delayFeedback" type="range" min="0" max="0.85" step="0.01" value="0.34">
+            </fieldset>
+          </div>
+        </aside>
+
+        <div class="win-statusbar">
+          <div class="status-panel">Celdas: <output id="cellCount">0</output></div>
+          <div class="status-panel">Pelotas: <output id="ballCount">0</output></div>
+          <div class="status-panel">Bichos: <output id="bugCount">0</output></div>
+        </div>
+      </main>
+
+      <section id="infoPanel" class="info-panel win-window" aria-label="informacion del proyecto" aria-hidden="true">
+        <div class="win-titlebar">
+          <div class="win-title">Ayuda</div>
+          <button id="closeInfoButton" class="win-btn" type="button">×</button>
+        </div>
+        <div class="win-content info-card">
+          <p><strong>Pixelsynth Paint</strong></p>
+          <p>El proyecto es una adaptación fiel y creativa de la idea original en Max for Live, con el beneficio de ser completamente accesible desde cualquier navegador.</p>
+          <p>Agradecimientos a la versión original de Ableton: <a href="https://github.com/little-scale/littlescale-max-patches/blob/master/little-scale.breakoutesque.amxd" target="_blank" style="color: blue;">little-scale.breakoutesque.amxd</a></p>
+          <p>Dibuja en la cuadrícula, lanza pelotas y crea bichos pixel-art para generar música.</p>
+          <p><strong>Herramientas:</strong> Usa el lápiz, balde, línea o círculo.</p>
+          <p><strong>Bichos:</strong><br/>- Errantes: Caminan al azar.<br/>- Cobardes: Huyen de las pelotas.<br/>- Glotones: Buscan comer píxeles pintados.</p>
+        </div>
+      </section>
+
+      <div id="backdrop" class="backdrop" hidden></div>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

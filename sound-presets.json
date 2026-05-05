@@ -1,0 +1,66 @@
+{
+  "default": "softPiano",
+  "presets": {
+    "softPiano": {
+      "label": "Soft piano",
+      "attack": 0.006,
+      "decay": 0.07,
+      "decayLevel": 0.5,
+      "release": 1.75,
+      "rowRelease": 0.55,
+      "gain": 0.16,
+      "q": 0.58,
+      "toneOpen": 9.5,
+      "toneClose": 2.1,
+      "noiseTime": 0.035,
+      "noiseGain": 0.026,
+      "partials": [
+        { "ratio": 1, "gain": 1, "type": "triangle", "detune": 0 },
+        { "ratio": 2.01, "gain": 0.36, "type": "sine", "detune": -3 },
+        { "ratio": 3.02, "gain": 0.16, "type": "sine", "detune": 5 },
+        { "ratio": 4.04, "gain": 0.07, "type": "sine", "detune": -6 }
+      ]
+    },
+    "brightPiano": {
+      "label": "Bright piano",
+      "attack": 0.004,
+      "decay": 0.045,
+      "decayLevel": 0.42,
+      "release": 1.35,
+      "rowRelease": 0.42,
+      "gain": 0.14,
+      "q": 0.72,
+      "toneOpen": 13,
+      "toneClose": 3.5,
+      "noiseTime": 0.026,
+      "noiseGain": 0.04,
+      "partials": [
+        { "ratio": 1, "gain": 1, "type": "triangle", "detune": 0 },
+        { "ratio": 2.005, "gain": 0.48, "type": "sine", "detune": 4 },
+        { "ratio": 3.01, "gain": 0.28, "type": "sine", "detune": -4 },
+        { "ratio": 5.02, "gain": 0.12, "type": "sine", "detune": 6 }
+      ]
+    },
+    "harp": {
+      "label": "Harp pluck",
+      "attack": 0.002,
+      "decay": 0.025,
+      "decayLevel": 0.28,
+      "release": 2.1,
+      "rowRelease": 0.8,
+      "gain": 0.13,
+      "q": 0.9,
+      "toneOpen": 16,
+      "toneClose": 4.4,
+      "noiseTime": 0.018,
+      "noiseGain": 0.018,
+      "partials": [
+        { "ratio": 1, "gain": 1, "type": "sine", "detune": 0 },
+        { "ratio": 2.002, "gain": 0.54, "type": "triangle", "detune": -5 },
+        { "ratio": 3.006, "gain": 0.25, "type": "sine", "detune": 5 },
+        { "ratio": 4.012, "gain": 0.14, "type": "sine", "detune": -8 },
+        { "ratio": 6.01, "gain": 0.06, "type": "sine", "detune": 4 }
+      ]
+    }
+  }
+}
