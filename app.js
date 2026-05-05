@@ -1593,6 +1593,10 @@
   }
 
   function openSettings() {
+    if (el.settingsDrawer.classList.contains("open")) {
+      closeOverlays();
+      return;
+    }
     el.settingsDrawer.classList.add("open");
     el.settingsDrawer.setAttribute("aria-hidden", "false");
     el.infoPanel.classList.remove("open");
@@ -1603,6 +1607,10 @@
   }
 
   function openInfo() {
+    if (el.infoPanel.classList.contains("open")) {
+      closeOverlays();
+      return;
+    }
     el.infoPanel.classList.add("open");
     el.infoPanel.setAttribute("aria-hidden", "false");
     el.settingsDrawer.classList.remove("open");
