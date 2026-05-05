@@ -24,6 +24,8 @@
 
   const el = {
     canvas: document.querySelector("#stage"),
+    startScreen: document.querySelector("#startScreen"),
+    startButton: document.querySelector("#startButton"),
     palette: document.querySelector("#palette"),
     audioButton: document.querySelector("#audioButton"),
     runButton: document.querySelector("#runButton"),
@@ -1629,9 +1631,22 @@
   populateInstrumentSelect();
   createPalette();
   bindControls();
-  ensureAudio();
-  generateRandomDrawing({ resetBalls: true, resetBugs: true, spawnIfEmpty: true });
   loadInstrumentPresets();
   updateAllControls();
-  requestAnimationFrame(animationLoop);
+
+  function startApp() {
+    if (!el.startScreen.parentNode) return;
+    el.startScreen.remove();
+    ensureAudio();
+    generateRandomDrawing({ resetBalls: true, resetBugs: true, spawnIfEmpty: true });
+    requestAnimationFrame(animationLoop);
+  }
+
+  if (el.startButton) {
+    el.startButton.addEventListener("click", startApp);
+  }
+  window.addEventListener("keydown", (e) => {
+    if (el.startScreen.parentNode) startApp();
+  }, { once: true });
+
 })();
