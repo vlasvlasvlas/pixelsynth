@@ -107,7 +107,7 @@
     volume: 0.7,
     tone: 0.58,
     reverb: 0.32,
-    reverbSize: 0.62,
+    reverbSize: 1,
     delay: 0.14,
     delayTime: 1,
     delayFeedback: 0.34,
@@ -1161,7 +1161,7 @@
 
     const impulseSize = state.reverbSize.toFixed(2);
     if (audio.impulseSize !== impulseSize) {
-      audio.convolver.buffer = makeImpulse(audio.context, 0.45 + state.reverbSize * 2.65, 1.4 + state.reverbSize * 2.8);
+      audio.convolver.buffer = makeImpulse(audio.context, state.reverbSize, 1.6 + state.reverbSize * 1.1);
       audio.impulseSize = impulseSize;
     }
   }
@@ -1432,7 +1432,7 @@
     state.instrument = el.instrumentPreset.value;
     state.volume = clamp(Number(el.volume.value), 0, 1);
     state.reverb = clamp(Number(el.reverbAmount.value), 0, 1);
-    state.reverbSize = clamp(Number(el.reverbSize.value), 0.1, 1);
+    state.reverbSize = clamp(Number(el.reverbSize.value), 0.1, 5);
     state.delay = clamp(Number(el.delayAmount.value), 0, 1);
     state.delayTime = clamp(Number(el.delayTime.value), 0.04, 5);
     state.delayFeedback = clamp(Number(el.delayFeedback.value), 0, 0.85);
