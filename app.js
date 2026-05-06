@@ -64,8 +64,6 @@
     instrumentPreset: document.querySelector("#instrumentPreset"),
     volume: document.querySelector("#volume"),
     volumeValue: document.querySelector("#volumeValue"),
-    toneAmount: document.querySelector("#toneAmount"),
-    toneAmountValue: document.querySelector("#toneAmountValue"),
     reverbAmount: document.querySelector("#reverbAmount"),
     reverbAmountValue: document.querySelector("#reverbAmountValue"),
     reverbSize: document.querySelector("#reverbSize"),
@@ -1433,7 +1431,6 @@
     state.scale = el.scaleMode.value;
     state.instrument = el.instrumentPreset.value;
     state.volume = clamp(Number(el.volume.value), 0, 1);
-    state.tone = clamp(Number(el.toneAmount.value), 0, 1);
     state.reverb = clamp(Number(el.reverbAmount.value), 0, 1);
     state.reverbSize = clamp(Number(el.reverbSize.value), 0.1, 1);
     state.delay = clamp(Number(el.delayAmount.value), 0, 1);
@@ -1474,8 +1471,6 @@
     el.instrumentPreset.value = state.instrument;
     el.volume.value = String(state.volume);
     el.volumeValue.value = state.volume.toFixed(2);
-    el.toneAmount.value = String(state.tone);
-    el.toneAmountValue.value = state.tone.toFixed(2);
     el.reverbAmount.value = String(state.reverb);
     el.reverbAmountValue.value = state.reverb.toFixed(2);
     el.reverbSize.value = String(state.reverbSize);
@@ -1566,7 +1561,6 @@
       el.scaleMode,
       el.instrumentPreset,
       el.volume,
-      el.toneAmount,
       el.reverbAmount,
       el.reverbSize,
       el.delayAmount,
