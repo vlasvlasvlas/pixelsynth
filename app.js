@@ -107,7 +107,7 @@
     reverb: 0.32,
     reverbSize: 0.62,
     delay: 0.14,
-    delayTime: 0.28,
+    delayTime: 1,
     delayFeedback: 0.34,
     balls: [],
     bugs: [],
@@ -1118,7 +1118,7 @@
     audio.dry = audio.context.createGain();
     audio.convolver = audio.context.createConvolver();
     audio.reverbGain = audio.context.createGain();
-    audio.delayNode = audio.context.createDelay(2);
+    audio.delayNode = audio.context.createDelay(5);
     audio.delayGain = audio.context.createGain();
     audio.feedback = audio.context.createGain();
     audio.compressor = audio.context.createDynamicsCompressor();
@@ -1437,7 +1437,7 @@
     state.reverb = clamp(Number(el.reverbAmount.value), 0, 1);
     state.reverbSize = clamp(Number(el.reverbSize.value), 0.1, 1);
     state.delay = clamp(Number(el.delayAmount.value), 0, 1);
-    state.delayTime = clamp(Number(el.delayTime.value), 0.04, 1.2);
+    state.delayTime = clamp(Number(el.delayTime.value), 0.04, 5);
     state.delayFeedback = clamp(Number(el.delayFeedback.value), 0, 0.85);
     updateAllControls();
     updateAudio();
