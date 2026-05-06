@@ -51,6 +51,8 @@
     ballRadiusValue: document.querySelector("#ballRadiusValue"),
     bugSpeed: document.querySelector("#bugSpeed"),
     bugSpeedValue: document.querySelector("#bugSpeedValue"),
+    chameleonShift: document.querySelector("#chameleonShift"),
+    chameleonShiftValue: document.querySelector("#chameleonShiftValue"),
     bugLife: document.querySelector("#bugLife"),
     clearBugsButton: document.querySelector("#clearBugsButton"),
     bounciness: document.querySelector("#bounciness"),
@@ -91,12 +93,14 @@
     autoRandom: false,
     autoRandomInterval: 3.0,
     autoRandomTimer: 0,
+    randomSilenceTimer: 0,
     launchPower: 1.25,
     radius: 0.48,
     bounciness: 1,
     drag: 0,
     substeps: 4,
     bugSpeed: 1,
+    chameleonShift: 2.5,
     bugLife: 10,
     root: 0,
     octave: 4,
@@ -319,7 +323,7 @@
         "10001",
         "10001",
       ],
-      glutton: [
+      chameleon: [
         "10001",
         "11011",
         "01110",
@@ -416,6 +420,7 @@
   function animationLoop(now) {
     const dt = Math.min(0.035, (now - lastFrame) / 1000 || 0);
     lastFrame = now;
+    state.randomSilenceTimer = Math.max(0, state.randomSilenceTimer - dt);
 
     if (state.running) {
       if (state.autoRandom) {
@@ -472,6 +477,17 @@
 
     for (const bug of state.bugs) {
       bug.hitCooldown = Math.max(0, bug.hitCooldown - dt);
+      if (bug.aiType === "chameleon") {
+        bug.colorShiftClock -= dt;
+        if (bug.colorShiftClock <= 0) {
+          let nextColor = bug.color;
+          for (let i = 0; i < 6 && nextColor === bug.color; i += 1) {
+            nextColor = randInt(0, palette.length - 1);
+          }
+          bug.color = nextColor;
+          bug.colorShiftClock += Math.max(0.05, bug.colorShiftInterval);
+        }
+      }
       bug.stepClock -= dt;
 
       while (bug.stepClock <= 0) {
@@ -505,21 +521,6 @@
       } else {
          if (Math.random() < 0.38) setBugDirection(bug);
       }
-    } else if (bug.aiType === "glutton") {
-      let found = false;
-      for (let r = 0; r < state.N; r++) {
-         for (let c = 0; c < state.N; c++) {
-            if (getCell(r, c) >= 0) {
-               bug.dx = c > bug.col ? 1 : (c < bug.col ? -1 : 0);
-               bug.dy = r > bug.row ? 1 : (r < bug.row ? -1 : 0);
-               if (bug.dx === 0 && bug.dy === 0) continue;
-               found = true;
-               break;
-            }
-         }
-         if (found) break;
-      }
-      if (!found && Math.random() < 0.38) setBugDirection(bug);
     } else {
       if (Math.random() < 0.38) setBugDirection(bug);
     }
@@ -543,15 +544,8 @@
     bug.x = nextCol + 0.5;
     bug.y = nextRow + 0.5;
     
-    if (bug.aiType === "glutton") {
-       if (getCell(nextRow, nextCol) >= 0) {
-          setCell(nextRow, nextCol, -1);
-          triggerColor(bug.color, nextCol, nextRow, 0.16);
-       }
-    } else {
-       setCell(nextRow, nextCol, bug.color);
-       triggerColor(bug.color, nextCol, nextRow, 0.16);
-    }
+    setCell(nextRow, nextCol, bug.color);
+    triggerColor(bug.color, nextCol, nextRow, 0.16);
   }
 
   function collideWalls(ball) {
@@ -602,7 +596,9 @@
     ball.x += best.nx * best.penetration;
     ball.y += best.ny * best.penetration;
     reflectVelocity(ball, best.nx, best.ny);
-    triggerColor(best.color, best.col, best.row);
+    if (state.randomSilenceTimer <= 0) {
+      triggerColor(best.color, best.col, best.row);
+    }
   }
 
   function circleAABB(cx, cy, cr, x1, y1, x2, y2) {
@@ -669,7 +665,7 @@
     ensureAudio();
 
     if (state.mode.startsWith("bug") && !event.shiftKey) {
-      const type = state.mode.split("-")[1] || ["wanderer", "coward", "glutton"][randInt(0, 2)];
+      const type = state.mode.split("-")[1] || ["wanderer", "coward", "chameleon"][randInt(0, 2)];
       spawnBug(point.col, point.row, state.selectedColor, type);
       return;
     }
@@ -887,6 +883,8 @@
       hitCooldown: 0,
       dead: false,
       aiType: type,
+      colorShiftInterval: clamp(Number(state.chameleonShift), 0.3, 8),
+      colorShiftClock: clamp(Number(state.chameleonShift), 0.3, 8),
     };
 
     setBugDirection(bug);
@@ -992,7 +990,7 @@
   }
 
   function generateRandomDrawing(options = {}) {
-    const { resetBalls = false, resetBugs = false, spawnIfEmpty = false } = options;
+    const { resetBalls = false, resetBugs = false, spawnIfEmpty = false, silenceSeconds = 0.18 } = options;
     initGrid();
 
     const N = state.N;
@@ -1093,6 +1091,7 @@
       spawnBall(startX, startY, Math.cos(angle) * magnitude, Math.sin(angle) * magnitude);
     }
 
+    state.randomSilenceTimer = Math.max(state.randomSilenceTimer, Math.max(0, silenceSeconds));
     markCellsDirty();
   }
 
@@ -1427,6 +1426,7 @@
     state.substeps = clampInt(Number(el.substeps.value), 1, 16);
     if (el.autoRandomInterval) state.autoRandomInterval = clamp(Number(el.autoRandomInterval.value), 1, 20);
     state.bugSpeed = clamp(Number(el.bugSpeed.value), 0.25, 3);
+    state.chameleonShift = clamp(Number(el.chameleonShift.value), 0.3, 8);
     state.bugLife = clampInt(Number(el.bugLife.value), 1, 24);
     state.root = clampInt(Number(el.rootNote.value), 0, 11);
     state.octave = clampInt(Number(el.octave.value), 1, 7);
@@ -1439,6 +1439,12 @@
     state.delay = clamp(Number(el.delayAmount.value), 0, 1);
     state.delayTime = clamp(Number(el.delayTime.value), 0.04, 5);
     state.delayFeedback = clamp(Number(el.delayFeedback.value), 0, 0.85);
+    for (const bug of state.bugs) {
+      if (bug.aiType === "chameleon") {
+        bug.colorShiftInterval = state.chameleonShift;
+        bug.colorShiftClock = Math.min(bug.colorShiftClock, bug.colorShiftInterval);
+      }
+    }
     updateAllControls();
     updateAudio();
   }
@@ -1455,6 +1461,8 @@
     el.substeps.value = String(state.substeps);
     el.bugSpeed.value = String(state.bugSpeed);
     el.bugSpeedValue.value = state.bugSpeed.toFixed(2);
+    el.chameleonShift.value = String(state.chameleonShift);
+    el.chameleonShiftValue.value = state.chameleonShift.toFixed(1);
     if (el.autoRandomInterval) {
       el.autoRandomInterval.value = state.autoRandomInterval.toFixed(1);
       el.autoRandomIntervalValue.value = state.autoRandomInterval.toFixed(1);
@@ -1550,6 +1558,7 @@
       el.dragAmount,
       el.substeps,
       el.bugSpeed,
+      el.chameleonShift,
       el.bugLife,
       el.autoRandomInterval,
       el.rootNote,

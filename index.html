@@ -52,7 +52,7 @@
                 <div class="toolbar-separator"></div>
                 <button class="tool-button" data-mode="bug-wanderer" type="button" title="Bicho Errante (Wanderer)">🐛</button>
                 <button class="tool-button" data-mode="bug-coward" type="button" title="Bicho Cobarde (Coward)">🏃</button>
-                <button class="tool-button" data-mode="bug-glutton" type="button" title="Bicho Glotón (Glutton)">🤤</button>
+                <button class="tool-button" data-mode="bug-chameleon" type="button" title="Bicho Camaleón (Chameleon)">🦎</button>
               </div>
 
               <div class="canvas-area">
@@ -81,6 +81,11 @@
                 <output id="bugSpeedValue">1.00</output>
               </div>
               <input id="bugSpeed" type="range" min="0.25" max="3" step="0.05" value="1.00">
+              <div class="control-row">
+                <label for="chameleonShift">Camaleón cambio (s)</label>
+                <output id="chameleonShiftValue">2.50</output>
+              </div>
+              <input id="chameleonShift" type="range" min="0.3" max="8" step="0.1" value="2.5">
               <div class="field-grid">
                 <label>Vida<input id="bugLife" type="number" min="1" max="24" step="1" value="10"></label>
                 <button id="clearBugsButton" class="wide-button action-button" type="button">Limpiar Bichos</button>
@@ -221,7 +226,7 @@
           <p>Agradecimientos a la versión original de Ableton: <a href="https://github.com/little-scale/littlescale-max-patches/blob/master/little-scale.breakoutesque.amxd" target="_blank" style="color: blue;">little-scale.breakoutesque.amxd</a></p>
           <p>Dibuja en la cuadrícula, lanza pelotas y crea bichos pixel-art para generar música.</p>
           <p><strong>Herramientas:</strong> Usa el lápiz, balde, línea o círculo.</p>
-          <p><strong>Bichos:</strong><br/>- Errantes: Caminan al azar.<br/>- Cobardes: Huyen de las pelotas.<br/>- Glotones: Buscan comer píxeles pintados.</p>
+          <p><strong>Bichos:</strong><br/>- Errantes: Caminan al azar.<br/>- Cobardes: Huyen de las pelotas.<br/>- Camaleón: Cambia color cada N segundos y pinta su rastro.</p>
         </div>
       </section>
 
