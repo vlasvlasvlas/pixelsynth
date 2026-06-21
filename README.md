@@ -41,3 +41,6 @@ Este proyecto utiliza **GitHub Pages** para que puedas usarlo directamente de fo
 - `styles.css`: Hojas de estilo con paletas de color vintage, sombras outset/inset, flexbox responsivo y tipografía clásica.
 - `app.js`: Contiene el engine 2D interactivo (colisiones de pelotas, pathfinding básico para IA de bichos, algoritmos de renderizado para herramientas de Paint como Bresenham) y el motor de Web Audio (`AudioContext`).
 - `.github/workflows/pages.yml`: Script de automatización (Action) para subir los cambios directamente a GitHub Pages cada vez que se hace push a la rama main.
+## License
+
+MIT License — © 2026 [Vladimiro Bellini](https://github.com/vlasvlasvlas). Free to use and modify, attribution required.
