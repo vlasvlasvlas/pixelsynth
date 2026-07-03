@@ -1,5 +1,7 @@
 # Pixelsynth Paint
 
+<img width="2082" height="1674" alt="image" src="https://github.com/user-attachments/assets/b15e3304-606f-490a-bba3-125d3d885d4c" />
+
 **Pixelsynth Paint** es un lienzo de pixel art musical y un emulador interactivo de creación sonora azarosa. Transforma tus dibujos y patrones visuales en secuencias musicales dinámicas dentro de una interfaz retro inspirada en el legendario **MS Paint** de **Windows 3.1**.
 
 Es un instrumento audiovisual autónomo y generativo que corre directamente en tu navegador, diseñado para explorar la relación física entre el espacio, los colores (notas) y las colisiones.
