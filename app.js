@@ -85,6 +85,8 @@
 
   const state = {
     N: 16,
+    cols: 16,
+    rows: 16,
     grid: [],
     selectedColor: 0,
     mode: "pencil",
@@ -155,13 +157,13 @@
   let instrumentPresets = getDefaultInstrumentPresets();
 
   function initGrid() {
-    state.grid = new Int8Array(state.N * state.N);
+    state.grid = new Int8Array(state.cols * state.rows);
     state.grid.fill(-1);
     markCellsDirty();
   }
 
   function gridIndex(row, col) {
-    return row * state.N + col;
+    return row * state.cols + col;
   }
 
   function getCell(row, col) {
@@ -169,7 +171,7 @@
   }
 
   function setCell(row, col, value) {
-    if (row < 0 || row >= state.N || col < 0 || col >= state.N) {
+    if (row < 0 || row >= state.rows || col < 0 || col >= state.cols) {
       return false;
     }
 
@@ -242,36 +244,69 @@
   function resizeCanvas() {
     const container = el.canvas.parentElement;
     const rect = container.getBoundingClientRect();
-    const cssSize = Math.max(240, Math.floor(Math.min(rect.width, rect.height) - 4));
     
-    const ratio = window.devicePixelRatio || 1;
-    const pixelSize = Math.round(cssSize * ratio);
+    const newRows = state.N;
+    const cssCellSize = Math.max(10, Math.floor((rect.height - 4) / newRows));
+    const newCols = Math.max(state.N, Math.floor((rect.width - 4) / cssCellSize));
+    
+    const cssWidth = newCols * cssCellSize;
+    const cssHeight = newRows * cssCellSize;
 
-    if (el.canvas.width !== pixelSize || el.canvas.height !== pixelSize) {
-      el.canvas.width = pixelSize;
-      el.canvas.height = pixelSize;
-      el.canvas.style.width = `${cssSize}px`;
-      el.canvas.style.height = `${cssSize}px`;
+    const ratio = window.devicePixelRatio || 1;
+    const pixelWidth = Math.round(cssWidth * ratio);
+    const pixelHeight = Math.round(cssHeight * ratio);
+
+    if (el.canvas.width !== pixelWidth || el.canvas.height !== pixelHeight) {
+      el.canvas.width = pixelWidth;
+      el.canvas.height = pixelHeight;
+      el.canvas.style.width = `${cssWidth}px`;
+      el.canvas.style.height = `${cssHeight}px`;
     }
 
     stageRect = {
-      width: pixelSize,
-      height: pixelSize,
-      scale: pixelSize,
+      width: pixelWidth,
+      height: pixelHeight,
+      cssWidth: cssWidth,
+      cssHeight: cssHeight,
+      cell: pixelHeight / newRows,
     };
+    
+    if (state.cols !== newCols || state.rows !== newRows) {
+       resizeGridData(newCols, newRows);
+       state.cols = newCols;
+       state.rows = newRows;
+    }
+  }
+
+  function resizeGridData(newCols, newRows) {
+     const newGrid = new Int8Array(newCols * newRows);
+     newGrid.fill(-1);
+     
+     if (state.grid && state.grid.length > 0) {
+        const oldCols = state.cols || state.N;
+        const oldRows = state.rows || state.N;
+        for (let r = 0; r < Math.min(oldRows, newRows); r++) {
+           for (let c = 0; c < Math.min(oldCols, newCols); c++) {
+              newGrid[r * newCols + c] = state.grid[r * oldCols + c];
+           }
+        }
+     }
+     state.grid = newGrid;
+     markCellsDirty();
   }
 
   function draw() {
     resizeCanvas();
 
-    const size = stageRect.width;
-    const cell = size / state.N;
+    const cell = stageRect.cell;
+    const width = stageRect.width;
+    const height = stageRect.height;
 
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, size, size);
+    ctx.fillRect(0, 0, width, height);
 
-    for (let row = 0; row < state.N; row += 1) {
-      for (let col = 0; col < state.N; col += 1) {
+    for (let row = 0; row < state.rows; row += 1) {
+      for (let col = 0; col < state.cols; col += 1) {
         const value = getCell(row, col);
         if (value >= 0) {
           ctx.fillStyle = palette[value];
@@ -281,20 +316,23 @@
     }
 
     ctx.strokeStyle = "#c4c4c4";
-    ctx.lineWidth = Math.max(1, stageRect.width / 1200);
+    ctx.lineWidth = Math.max(1, stageRect.height / 1200);
     ctx.beginPath();
-    for (let i = 1; i < state.N; i += 1) {
+    for (let i = 1; i < state.cols; i += 1) {
       const p = Math.round(i * cell) + 0.5;
       ctx.moveTo(p, 0);
-      ctx.lineTo(p, size);
+      ctx.lineTo(p, height);
+    }
+    for (let i = 1; i < state.rows; i += 1) {
+      const p = Math.round(i * cell) + 0.5;
       ctx.moveTo(0, p);
-      ctx.lineTo(size, p);
+      ctx.lineTo(width, p);
     }
     ctx.stroke();
 
     ctx.strokeStyle = "#111111";
-    ctx.lineWidth = Math.max(4, stageRect.width / 220);
-    ctx.strokeRect(0, 0, size, size);
+    ctx.lineWidth = Math.max(4, stageRect.height / 220);
+    ctx.strokeRect(0, 0, width, height);
 
     drawPolygon(cell);
     drawLaunch(cell);
@@ -322,9 +360,9 @@
     ctx.save();
     
     if (state.usePolygonBounds) {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.98)";
+      ctx.fillStyle = "rgba(0, 0, 0, 0.95)";
       ctx.beginPath();
-      ctx.rect(0, 0, stageRect.width, stageRect.height);
+      ctx.rect(0, 0, el.canvas.width, el.canvas.height);
       const pts = state.polygonPoints;
       ctx.moveTo(pts[0].x * cell, pts[0].y * cell);
       for (let i = 1; i < pts.length; i++) {
@@ -335,7 +373,7 @@
     }
 
     ctx.strokeStyle = state.pointer.polygonDrawing ? "#21a6df" : "#f2241f";
-    ctx.lineWidth = Math.max(3, stageRect.width / 240);
+    ctx.lineWidth = Math.max(3, stageRect.height / 240);
     ctx.lineJoin = "round";
     
     ctx.beginPath();
@@ -590,7 +628,7 @@
     let nextCol = bug.col + bug.dx;
     let nextRow = bug.row + bug.dy;
 
-    let isOutside = nextCol < 0 || nextCol >= state.N || nextRow < 0 || nextRow >= state.N;
+    let isOutside = nextCol < 0 || nextCol >= state.cols || nextRow < 0 || nextRow >= state.rows;
     if (state.usePolygonBounds && state.polygonPoints.length > 2) {
       isOutside = isOutside || !isPointInPolygon(nextCol + 0.5, nextRow + 0.5, state.polygonPoints);
     }
@@ -667,25 +705,25 @@
     if (ball.x - ball.radius < 0) {
       ball.x = ball.radius;
       ball.vx = Math.abs(ball.vx) * state.bounciness;
-    } else if (ball.x + ball.radius > state.N) {
-      ball.x = state.N - ball.radius;
+    } else if (ball.x + ball.radius > state.cols) {
+      ball.x = state.cols - ball.radius;
       ball.vx = -Math.abs(ball.vx) * state.bounciness;
     }
 
     if (ball.y - ball.radius < 0) {
       ball.y = ball.radius;
       ball.vy = Math.abs(ball.vy) * state.bounciness;
-    } else if (ball.y + ball.radius > state.N) {
-      ball.y = state.N - ball.radius;
+    } else if (ball.y + ball.radius > state.rows) {
+      ball.y = state.rows - ball.radius;
       ball.vy = -Math.abs(ball.vy) * state.bounciness;
     }
   }
 
   function collideCells(ball) {
-    const minCol = clampInt(Math.floor(ball.x - ball.radius), 0, state.N - 1);
-    const maxCol = clampInt(Math.floor(ball.x + ball.radius), 0, state.N - 1);
-    const minRow = clampInt(Math.floor(ball.y - ball.radius), 0, state.N - 1);
-    const maxRow = clampInt(Math.floor(ball.y + ball.radius), 0, state.N - 1);
+    const minCol = clampInt(Math.floor(ball.x - ball.radius), 0, state.cols - 1);
+    const maxCol = clampInt(Math.floor(ball.x + ball.radius), 0, state.cols - 1);
+    const minRow = clampInt(Math.floor(ball.y - ball.radius), 0, state.rows - 1);
+    const maxRow = clampInt(Math.floor(ball.y + ball.radius), 0, state.rows - 1);
 
     let best = null;
 
@@ -759,15 +797,15 @@
 
   function pointerToGrid(event) {
     const rect = el.canvas.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * state.N;
-    const y = ((event.clientY - rect.top) / rect.height) * state.N;
+    const x = ((event.clientX - rect.left) / rect.width) * state.cols;
+    const y = ((event.clientY - rect.top) / rect.height) * state.rows;
 
     return {
       x,
       y,
       col: Math.floor(x),
       row: Math.floor(y),
-      inside: x >= 0 && x < state.N && y >= 0 && y < state.N,
+      inside: x >= 0 && x < state.cols && y >= 0 && y < state.rows,
     };
   }
 
@@ -828,8 +866,8 @@
       state.pointer.launching = true;
       state.pointer.painting = false;
       state.pointer.launchStart = {
-        x: clamp(point.x, state.radius, state.N - state.radius),
-        y: clamp(point.y, state.radius, state.N - state.radius),
+        x: clamp(point.x, state.radius, state.cols - state.radius),
+        y: clamp(point.y, state.radius, state.rows - state.radius),
       };
       state.pointer.launchCurrent = { ...state.pointer.launchStart };
       return;
@@ -862,14 +900,14 @@
 
     if (state.pointer.launching) {
       state.pointer.launchCurrent = {
-        x: clamp(point.x, 0, state.N),
-        y: clamp(point.y, 0, state.N),
+        x: clamp(point.x, 0, state.cols),
+        y: clamp(point.y, 0, state.rows),
       };
       return;
     }
 
     if (state.mode === "line" || state.mode === "circle") {
-      state.pointer.shapeCurrent = { col: clampInt(point.col, 0, state.N - 1), row: clampInt(point.row, 0, state.N - 1) };
+      state.pointer.shapeCurrent = { col: clampInt(point.col, 0, state.cols - 1), row: clampInt(point.row, 0, state.cols - 1) };
       return;
     }
 
@@ -919,9 +957,9 @@
       setCell(r, c, replacementColor);
       
       if (r > 0) queue.push([r - 1, c]);
-      if (r < state.N - 1) queue.push([r + 1, c]);
+      if (r < state.rows - 1) queue.push([r + 1, c]);
       if (c > 0) queue.push([r, c - 1]);
-      if (c < state.N - 1) queue.push([r, c + 1]);
+      if (c < state.cols - 1) queue.push([r, c + 1]);
     }
     triggerColor(replacementColor, startCol, startRow, 0.4);
   }
@@ -953,7 +991,7 @@
       const angle = (i / samples) * Math.PI * 2;
       const col = Math.round(s.col + Math.cos(angle) * radius);
       const row = Math.round(s.row + Math.sin(angle) * radius);
-      if (col >= 0 && col < state.N && row >= 0 && row < state.N) {
+      if (col >= 0 && col < state.cols && row >= 0 && row < state.rows) {
         setCell(row, col, state.selectedColor);
       }
     }
@@ -992,8 +1030,8 @@
 
   function spawnBall(x, y, vx, vy) {
     const ball = {
-      x: clamp(Number(x), state.radius, state.N - state.radius),
-      y: clamp(Number(y), state.radius, state.N - state.radius),
+      x: clamp(Number(x), state.radius, state.cols - state.radius),
+      y: clamp(Number(y), state.radius, state.rows - state.radius),
       vx: Number(vx),
       vy: Number(vy),
       radius: state.radius,
@@ -1005,16 +1043,16 @@
   function addDefaultBall() {
     ensureAudio();
     const angle = -Math.PI / 4 + (Math.random() - 0.5) * 0.8;
-    const magnitude = state.N * 0.18 * state.launchPower;
+    const magnitude = state.rows * 0.18 * state.launchPower;
     
-    let bx = state.N * 0.5;
-    let by = state.N * 0.42;
+    let bx = state.cols * 0.5;
+    let by = state.rows * 0.42;
 
     if (state.usePolygonBounds && state.polygonPoints.length > 2) {
       if (!isPointInPolygon(bx, by, state.polygonPoints)) {
         let found = false;
-        for (let r = 0; r < state.N; r++) {
-          for (let c = 0; c < state.N; c++) {
+        for (let r = 0; r < state.rows; r++) {
+          for (let c = 0; c < state.cols; c++) {
             if (isPointInPolygon(c + 0.5, r + 0.5, state.polygonPoints)) {
               bx = c + 0.5; by = r + 0.5; found = true; break;
             }
@@ -1028,8 +1066,8 @@
   }
 
   function spawnBug(col, row, color = state.selectedColor, type = "wanderer") {
-    col = clampInt(col, 0, state.N - 1);
-    row = clampInt(row, 0, state.N - 1);
+    col = clampInt(col, 0, state.cols - 1);
+    row = clampInt(row, 0, state.rows - 1);
 
     const bug = {
       col,
@@ -1075,7 +1113,7 @@
     const choices = directions.filter(([dx, dy]) => {
       const nextX = currentX + dx;
       const nextY = currentY + dy;
-      return nextX >= 0 && nextX < state.N && nextY >= 0 && nextY < state.N;
+      return nextX >= 0 && nextX < state.cols && nextY >= 0 && nextY < state.rows;
     });
     const options = choices.length ? choices : directions;
     const [dx, dy] = options[randInt(0, options.length - 1)];
@@ -1126,8 +1164,8 @@
     bug.dx = -Math.sign(nx) || bug.dx;
     bug.dy = -Math.sign(ny) || bug.dy;
 
-    const col = clampInt(bug.col, 0, state.N - 1);
-    const row = clampInt(bug.row, 0, state.N - 1);
+    const col = clampInt(bug.col, 0, state.cols - 1);
+    const row = clampInt(bug.row, 0, state.rows - 1);
     setCell(row, col, bug.color);
     triggerColor(bug.color, col, row, 0.95);
 
@@ -1138,8 +1176,8 @@
   }
 
   function burstBug(bug) {
-    const centerCol = clampInt(bug.col, 0, state.N - 1);
-    const centerRow = clampInt(bug.row, 0, state.N - 1);
+    const centerCol = clampInt(bug.col, 0, state.cols - 1);
+    const centerRow = clampInt(bug.row, 0, state.rows - 1);
     const offsets = [
       [0, 0],
       [1, 0],
@@ -1159,14 +1197,19 @@
     const { resetBalls = false, resetBugs = false, spawnIfEmpty = false, silenceSeconds = 0.18 } = options;
     initGrid();
 
-    const N = state.N;
-    const margin = Math.max(1, Math.floor(N * 0.08));
-    const usableMin = margin;
-    const usableMax = Math.max(margin, N - margin - 1);
+    const N = state.N; // scale base
+    const cols = state.cols;
+    const rows = state.rows;
+    const marginX = Math.max(1, Math.floor(cols * 0.08));
+    const marginY = Math.max(1, Math.floor(rows * 0.08));
+    const usableColMin = marginX;
+    const usableColMax = Math.max(marginX, cols - marginX - 1);
+    const usableRowMin = marginY;
+    const usableRowMax = Math.max(marginY, rows - marginY - 1);
 
     const plot = (col, row, color) => {
-      col = clampInt(Math.round(col), 0, N - 1);
-      row = clampInt(Math.round(row), 0, N - 1);
+      col = clampInt(Math.round(col), 0, cols - 1);
+      row = clampInt(Math.round(row), 0, rows - 1);
       if (state.usePolygonBounds && state.polygonPoints.length > 2) {
         if (!isPointInPolygon(col + 0.5, row + 0.5, state.polygonPoints)) return;
       }
@@ -1194,8 +1237,8 @@
 
     const strokeCount = randInt(5, 9);
     for (let stroke = 0; stroke < strokeCount; stroke += 1) {
-      let col = randInt(usableMin, usableMax);
-      let row = randInt(usableMin, usableMax);
+      let col = randInt(usableColMin, usableColMax);
+      let row = randInt(usableRowMin, usableRowMax);
       let [dx, dy] = directions[randInt(0, directions.length - 1)];
       const color = (stroke + randInt(0, palette.length - 1)) % palette.length;
       const steps = randInt(Math.max(3, Math.floor(N * 0.32)), Math.max(5, Math.floor(N * 0.82)));
@@ -1207,16 +1250,16 @@
           [dx, dy] = directions[randInt(0, directions.length - 1)];
         }
 
-        col = clamp(col + dx, usableMin, usableMax);
-        row = clamp(row + dy, usableMin, usableMax);
+        col = clamp(col + dx, usableColMin, usableColMax);
+        row = clamp(row + dy, usableRowMin, usableRowMax);
       }
     }
 
     const segmentCount = randInt(3, 6);
     for (let i = 0; i < segmentCount; i += 1) {
       const color = randInt(0, palette.length - 1);
-      const x1 = randInt(usableMin, usableMax);
-      const y1 = randInt(usableMin, usableMax);
+      const x1 = randInt(usableColMin, usableColMax);
+      const y1 = randInt(usableRowMin, usableRowMax);
       const angle = (Math.PI * 2 * randInt(0, 7)) / 8;
       const length = randInt(Math.max(2, Math.floor(N * 0.18)), Math.max(3, Math.floor(N * 0.55)));
       line(x1, y1, x1 + Math.cos(angle) * length, y1 + Math.sin(angle) * length, color);
@@ -1225,8 +1268,8 @@
     const arcCount = randInt(1, 3);
     for (let i = 0; i < arcCount; i += 1) {
       const color = randInt(0, palette.length - 1);
-      const cx = randInt(Math.floor(N * 0.28), Math.ceil(N * 0.72));
-      const cy = randInt(Math.floor(N * 0.28), Math.ceil(N * 0.72));
+      const cx = randInt(Math.floor(cols * 0.28), Math.ceil(cols * 0.72));
+      const cy = randInt(Math.floor(rows * 0.28), Math.ceil(rows * 0.72));
       const radius = randInt(Math.max(2, Math.floor(N * 0.16)), Math.max(3, Math.floor(N * 0.36)));
       const start = Math.random() * Math.PI * 2;
       const length = Math.PI * (0.5 + Math.random() * 1.35);
@@ -1240,7 +1283,7 @@
 
     if (countCells() < Math.max(12, N * 2)) {
       for (let i = 0; i < N; i += 1) {
-        plot(randInt(usableMin, usableMax), randInt(usableMin, usableMax), randInt(0, palette.length - 1));
+        plot(randInt(usableColMin, usableColMax), randInt(usableRowMin, usableRowMax), randInt(0, palette.length - 1));
       }
     }
 
@@ -1253,14 +1296,14 @@
     }
 
     if (spawnIfEmpty && state.balls.length === 0) {
-      let startX = randInt(usableMin, usableMax);
-      let startY = randInt(usableMin, Math.max(usableMin, Math.floor(N * 0.35)));
+      let startX = randInt(usableColMin, usableColMax);
+      let startY = randInt(usableRowMin, Math.max(usableRowMin, Math.floor(rows * 0.35)));
       
       if (state.usePolygonBounds && state.polygonPoints.length > 2) {
         for (let tries = 0; tries < 100; tries++) {
           if (isPointInPolygon(startX, startY, state.polygonPoints)) break;
-          startX = randInt(usableMin, usableMax);
-          startY = randInt(usableMin, usableMax);
+          startX = randInt(usableColMin, usableColMax);
+          startY = randInt(usableRowMin, usableRowMax);
         }
       }
 
@@ -1353,14 +1396,14 @@
 
     const pitchNumber = pitchNumberForColor(colorIndex);
     const frequency = 440 * 2 ** ((pitchNumber - 69) / 12);
-    playInstrumentTone(frequency, clamp(col / Math.max(1, state.N - 1), 0, 1), row, gainScale);
+    playInstrumentTone(frequency, clamp(col / Math.max(1, state.cols - 1), 0, 1), row, gainScale);
   }
 
   function playInstrumentTone(frequency, panValue, row, gainScale) {
     const ac = audio.context;
     const now = ac.currentTime;
     const preset = getInstrumentPreset();
-    const duration = preset.release + (1 - clamp(row / Math.max(1, state.N), 0, 1)) * preset.rowRelease;
+    const duration = preset.release + (1 - clamp(row / Math.max(1, state.rows), 0, 1)) * preset.rowRelease;
     const voice = ac.createGain();
     const filter = ac.createBiquadFilter();
     const pan = ac.createStereoPanner ? ac.createStereoPanner() : null;
