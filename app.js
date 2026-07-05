@@ -40,6 +40,7 @@
     autoRandomButton: document.querySelector("#autoRandomButton"),
     randomButton: document.querySelector("#randomButton"),
     clearButton: document.querySelector("#clearButton"),
+    clearPolygonButton: document.querySelector("#clearPolygonButton"),
     addBallButton: document.querySelector("#addBallButton"),
     gridSize: document.querySelector("#gridSize"),
     gridSizeValue: document.querySelector("#gridSizeValue"),
@@ -111,6 +112,8 @@
     delay: 0.14,
     delayTime: 1,
     delayFeedback: 0.34,
+    usePolygonBounds: false,
+    polygonPoints: [],
     balls: [],
     bugs: [],
     pointer: {
@@ -121,6 +124,8 @@
       launchCurrent: null,
       shapeStart: null,
       shapeCurrent: null,
+      polygonDrawing: false,
+      polygonTempPoint: null,
       lastCell: null,
       strokeValue: 0,
     },
@@ -235,19 +240,24 @@
   }
 
   function resizeCanvas() {
-    const cssWidth = Math.max(240, Math.round(el.canvas.clientWidth));
+    const container = el.canvas.parentElement;
+    const rect = container.getBoundingClientRect();
+    const cssSize = Math.max(240, Math.floor(Math.min(rect.width, rect.height) - 4));
+    
     const ratio = window.devicePixelRatio || 1;
-    const pixelWidth = Math.round(cssWidth * ratio);
+    const pixelSize = Math.round(cssSize * ratio);
 
-    if (el.canvas.width !== pixelWidth || el.canvas.height !== pixelWidth) {
-      el.canvas.width = pixelWidth;
-      el.canvas.height = pixelWidth;
+    if (el.canvas.width !== pixelSize || el.canvas.height !== pixelSize) {
+      el.canvas.width = pixelSize;
+      el.canvas.height = pixelSize;
+      el.canvas.style.width = `${cssSize}px`;
+      el.canvas.style.height = `${cssSize}px`;
     }
 
     stageRect = {
-      width: pixelWidth,
-      height: pixelWidth,
-      scale: pixelWidth,
+      width: pixelSize,
+      height: pixelSize,
+      scale: pixelSize,
     };
   }
 
@@ -286,6 +296,7 @@
     ctx.lineWidth = Math.max(4, stageRect.width / 220);
     ctx.strokeRect(0, 0, size, size);
 
+    drawPolygon(cell);
     drawLaunch(cell);
     drawShapePreview(cell);
     drawBugs(cell);
@@ -303,6 +314,54 @@
       ctx.arc(ball.x * cell, ball.y * cell, ball.radius * cell, 0, Math.PI * 2);
       ctx.fill();
     }
+  }
+
+  function drawPolygon(cell) {
+    if (state.polygonPoints.length === 0) return;
+
+    ctx.save();
+    
+    if (state.usePolygonBounds) {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.98)";
+      ctx.beginPath();
+      ctx.rect(0, 0, stageRect.width, stageRect.height);
+      const pts = state.polygonPoints;
+      ctx.moveTo(pts[0].x * cell, pts[0].y * cell);
+      for (let i = 1; i < pts.length; i++) {
+        ctx.lineTo(pts[i].x * cell, pts[i].y * cell);
+      }
+      ctx.closePath();
+      ctx.fill("evenodd");
+    }
+
+    ctx.strokeStyle = state.pointer.polygonDrawing ? "#21a6df" : "#f2241f";
+    ctx.lineWidth = Math.max(3, stageRect.width / 240);
+    ctx.lineJoin = "round";
+    
+    ctx.beginPath();
+    const pts = state.polygonPoints;
+    ctx.moveTo(pts[0].x * cell, pts[0].y * cell);
+    for (let i = 1; i < pts.length; i++) {
+      ctx.lineTo(pts[i].x * cell, pts[i].y * cell);
+    }
+    
+    if (state.pointer.polygonDrawing && state.pointer.polygonTempPoint) {
+      ctx.lineTo(state.pointer.polygonTempPoint.x * cell, state.pointer.polygonTempPoint.y * cell);
+    } else if (state.usePolygonBounds) {
+      ctx.closePath();
+    }
+    
+    ctx.stroke();
+    
+    ctx.fillStyle = "#ffffff";
+    for (const pt of pts) {
+      ctx.beginPath();
+      ctx.arc(pt.x * cell, pt.y * cell, cell * 0.15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+    
+    ctx.restore();
   }
 
   function drawBugs(cell) {
@@ -531,10 +590,15 @@
     let nextCol = bug.col + bug.dx;
     let nextRow = bug.row + bug.dy;
 
-    if (nextCol < 0 || nextCol >= state.N || nextRow < 0 || nextRow >= state.N) {
+    let isOutside = nextCol < 0 || nextCol >= state.N || nextRow < 0 || nextRow >= state.N;
+    if (state.usePolygonBounds && state.polygonPoints.length > 2) {
+      isOutside = isOutside || !isPointInPolygon(nextCol + 0.5, nextRow + 0.5, state.polygonPoints);
+    }
+
+    if (isOutside) {
       setBugDirection(bug);
-      nextCol = clampInt(bug.col + bug.dx, 0, state.N - 1);
-      nextRow = clampInt(bug.row + bug.dy, 0, state.N - 1);
+      nextCol = bug.col;
+      nextRow = bug.row;
     }
 
     bug.col = nextCol;
@@ -546,7 +610,60 @@
     triggerColor(bug.color, nextCol, nextRow, 0.16);
   }
 
+  function isPointInPolygon(x, y, pts) {
+    let inside = false;
+    for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+      const xi = pts[i].x, yi = pts[i].y;
+      const xj = pts[j].x, yj = pts[j].y;
+      const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  function circleSegmentCollision(cx, cy, cr, x1, y1, x2, y2) {
+    const l2 = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+    if (l2 === 0) return { hit: false };
+    
+    let t = ((cx - x1) * (x2 - x1) + (cy - y1) * (y2 - y1)) / l2;
+    t = Math.max(0, Math.min(1, t));
+    
+    const closestX = x1 + t * (x2 - x1);
+    const closestY = y1 + t * (y2 - y1);
+    
+    const dx = cx - closestX;
+    const dy = cy - closestY;
+    const d2 = dx * dx + dy * dy;
+    
+    if (d2 > cr * cr || d2 === 0) return { hit: false };
+    
+    const dist = Math.sqrt(d2);
+    return { hit: true, nx: dx / dist, ny: dy / dist, penetration: cr - dist };
+  }
+
+  function collidePolygon(ball) {
+    const pts = state.polygonPoints;
+    let best = null;
+    for (let i = 0; i < pts.length; i++) {
+      const p1 = pts[i];
+      const p2 = pts[(i + 1) % pts.length];
+      const hit = circleSegmentCollision(ball.x, ball.y, ball.radius, p1.x, p1.y, p2.x, p2.y);
+      if (hit.hit && (!best || hit.penetration > best.penetration)) {
+        best = hit;
+      }
+    }
+    if (best) {
+      ball.x += best.nx * best.penetration;
+      ball.y += best.ny * best.penetration;
+      reflectVelocity(ball, best.nx, best.ny);
+    }
+  }
+
   function collideWalls(ball) {
+    if (state.usePolygonBounds && state.polygonPoints.length > 2) {
+      collidePolygon(ball);
+      return;
+    }
     if (ball.x - ball.radius < 0) {
       ball.x = ball.radius;
       ball.vx = Math.abs(ball.vx) * state.bounciness;
@@ -660,6 +777,12 @@
       return;
     }
 
+    if (state.usePolygonBounds && state.polygonPoints.length > 2 && state.mode !== "polygon") {
+      if (!isPointInPolygon(point.x, point.y, state.polygonPoints)) {
+        return;
+      }
+    }
+
     ensureAudio();
 
     if (state.mode.startsWith("bug") && !event.shiftKey) {
@@ -670,6 +793,29 @@
     
     if (state.mode === "bucket" && !event.shiftKey) {
       floodFill(point.row, point.col, getCell(point.row, point.col), state.selectedColor);
+      return;
+    }
+
+    if (state.mode === "polygon") {
+      const pt = { col: point.col, row: point.row, x: point.x, y: point.y };
+      if (!state.pointer.polygonDrawing) {
+        state.polygonPoints = [pt];
+        state.pointer.polygonDrawing = true;
+        state.usePolygonBounds = false;
+        state.pointer.polygonTempPoint = pt;
+      } else {
+        const first = state.polygonPoints[0];
+        const dist = Math.hypot(first.x - pt.x, first.y - pt.y);
+        if (dist < 1.5 && state.polygonPoints.length > 2) {
+          state.pointer.polygonDrawing = false;
+          state.pointer.polygonTempPoint = null;
+          state.usePolygonBounds = true;
+          state.balls = state.balls.filter(b => isPointInPolygon(b.x, b.y, state.polygonPoints));
+          state.bugs = state.bugs.filter(b => isPointInPolygon(b.x, b.y, state.polygonPoints));
+        } else {
+          state.polygonPoints.push(pt);
+        }
+      }
       return;
     }
 
@@ -705,6 +851,10 @@
 
   function handlePointerMove(event) {
     if (!state.pointer.active) {
+      if (state.mode === "polygon" && state.pointer.polygonDrawing) {
+        const point = pointerToGrid(event);
+        state.pointer.polygonTempPoint = { x: point.x, y: point.y };
+      }
       return;
     }
 
@@ -856,7 +1006,25 @@
     ensureAudio();
     const angle = -Math.PI / 4 + (Math.random() - 0.5) * 0.8;
     const magnitude = state.N * 0.18 * state.launchPower;
-    spawnBall(state.N * 0.5, state.N * 0.42, Math.cos(angle) * magnitude, Math.sin(angle) * magnitude);
+    
+    let bx = state.N * 0.5;
+    let by = state.N * 0.42;
+
+    if (state.usePolygonBounds && state.polygonPoints.length > 2) {
+      if (!isPointInPolygon(bx, by, state.polygonPoints)) {
+        let found = false;
+        for (let r = 0; r < state.N; r++) {
+          for (let c = 0; c < state.N; c++) {
+            if (isPointInPolygon(c + 0.5, r + 0.5, state.polygonPoints)) {
+              bx = c + 0.5; by = r + 0.5; found = true; break;
+            }
+          }
+          if (found) break;
+        }
+      }
+    }
+
+    spawnBall(bx, by, Math.cos(angle) * magnitude, Math.sin(angle) * magnitude);
   }
 
   function spawnBug(col, row, color = state.selectedColor, type = "wanderer") {
@@ -999,6 +1167,9 @@
     const plot = (col, row, color) => {
       col = clampInt(Math.round(col), 0, N - 1);
       row = clampInt(Math.round(row), 0, N - 1);
+      if (state.usePolygonBounds && state.polygonPoints.length > 2) {
+        if (!isPointInPolygon(col + 0.5, row + 0.5, state.polygonPoints)) return;
+      }
       setCell(row, col, color);
     };
 
@@ -1082,8 +1253,17 @@
     }
 
     if (spawnIfEmpty && state.balls.length === 0) {
-      const startX = randInt(usableMin, usableMax);
-      const startY = randInt(usableMin, Math.max(usableMin, Math.floor(N * 0.35)));
+      let startX = randInt(usableMin, usableMax);
+      let startY = randInt(usableMin, Math.max(usableMin, Math.floor(N * 0.35)));
+      
+      if (state.usePolygonBounds && state.polygonPoints.length > 2) {
+        for (let tries = 0; tries < 100; tries++) {
+          if (isPointInPolygon(startX, startY, state.polygonPoints)) break;
+          startX = randInt(usableMin, usableMax);
+          startY = randInt(usableMin, usableMax);
+        }
+      }
+
       const angle = -Math.PI * (0.18 + Math.random() * 0.64);
       const magnitude = N * (0.12 + Math.random() * 0.1) * state.launchPower;
       spawnBall(startX, startY, Math.cos(angle) * magnitude, Math.sin(angle) * magnitude);
@@ -1532,6 +1712,12 @@
       initGrid();
       state.balls = [];
       state.bugs = [];
+    });
+    el.clearPolygonButton?.addEventListener("click", () => {
+      state.polygonPoints = [];
+      state.pointer.polygonDrawing = false;
+      state.pointer.polygonTempPoint = null;
+      state.usePolygonBounds = false;
     });
     el.addBallButton.addEventListener("click", addDefaultBall);
     el.clearBugsButton.addEventListener("click", () => {
