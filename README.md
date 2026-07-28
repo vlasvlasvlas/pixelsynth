@@ -25,7 +25,7 @@ Pixelsynth Paint convierte los rebotes e interacciones en la pantalla en notas m
 En el botón `Configuración` (menú superior) podrás controlar:
 * **Generación de Físicas:** Rebote, velocidad, fricción y radio de impacto.
 * **Inteligencia Artificial:** Velocidad de movimiento y vida útil de los bichos (golpes necesarios para morir).
-* **Motor de Audio:** Presets de sintetizador, volumen, tono y efectos espaciales de Delay o Reverb en tiempo real.
+* **Motor de Audio:** Presets de sintetizador, un único master, tono y efectos Delay/Reverb normalizados en tiempo real, con salida final mono.
 * **Ajustes visuales:** Control del tamaño de la cuadrícula interactiva.
 
 ## 🔊 Manual de Presets de Sonido

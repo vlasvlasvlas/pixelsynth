@@ -47,7 +47,7 @@ Si el JSON tiene error o una estructura inválida, la app usa presets internos p
 - `decayLevel`: nivel tras decay.
 - `release`: cola principal.
 - `rowRelease`: cola extra según posición del impacto en el grid.
-- `gain`: salida base del preset.
+- `gain`: peso interno de la voz; el motor lo normaliza para que el `Master` siga siendo el único control de salida.
 - `q`: resonancia del filtro.
 - `toneOpen`: cuánto abre el filtro con el slider Tone.
 - `toneClose`: punto de cierre del filtro.
@@ -58,7 +58,7 @@ Si el JSON tiene error o una estructura inválida, la app usa presets internos p
 ## Campos por parcial
 
 - `ratio`: multiplicador de frecuencia respecto de la nota base.
-- `gain`: volumen de esa parcial.
+- `gain`: peso interno de esa parcial dentro del timbre. No es un volumen de salida independiente.
 - `type`: `sine`, `triangle`, `sawtooth`, `square`.
 - `detune`: desvío en cents.
 
@@ -69,7 +69,7 @@ Si el JSON tiene error o una estructura inválida, la app usa presets internos p
 - `decayLevel`: `0.01` a `1`
 - `release`: `0.05` a `6`
 - `rowRelease`: `0` a `3`
-- `gain`: `0.01` a `0.5`
+- `gain`: `0.01` a `0.5` (normalizado por el motor)
 - `q`: `0.05` a `12`
 - `toneOpen`: `0.2` a `32`
 - `toneClose`: `0.2` a `12`

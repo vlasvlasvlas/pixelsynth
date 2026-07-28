@@ -148,6 +148,7 @@
     delayGain: null,
     feedback: null,
     compressor: null,
+    monoOutput: null,
     impulseSize: null,
     enabled: false,
   };
@@ -1342,6 +1343,10 @@
     audio.delayGain = audio.context.createGain();
     audio.feedback = audio.context.createGain();
     audio.compressor = audio.context.createDynamicsCompressor();
+    audio.monoOutput = audio.context.createGain();
+    audio.monoOutput.channelCount = 1;
+    audio.monoOutput.channelCountMode = "explicit";
+    audio.monoOutput.channelInterpretation = "speakers";
 
     audio.input.connect(audio.dry);
     audio.input.connect(audio.convolver);
@@ -1354,12 +1359,13 @@
     audio.delayNode.connect(audio.delayGain);
     audio.delayGain.connect(audio.master);
     audio.master.connect(audio.compressor);
-    audio.compressor.connect(audio.context.destination);
-    audio.compressor.threshold.setValueAtTime(-18, audio.context.currentTime);
-    audio.compressor.knee.setValueAtTime(18, audio.context.currentTime);
-    audio.compressor.ratio.setValueAtTime(3, audio.context.currentTime);
+    audio.compressor.connect(audio.monoOutput);
+    audio.monoOutput.connect(audio.context.destination);
+    audio.compressor.threshold.setValueAtTime(-20, audio.context.currentTime);
+    audio.compressor.knee.setValueAtTime(12, audio.context.currentTime);
+    audio.compressor.ratio.setValueAtTime(8, audio.context.currentTime);
     audio.compressor.attack.setValueAtTime(0.003, audio.context.currentTime);
-    audio.compressor.release.setValueAtTime(0.16, audio.context.currentTime);
+    audio.compressor.release.setValueAtTime(0.14, audio.context.currentTime);
 
     audio.enabled = true;
     audio.context.resume();
@@ -1375,12 +1381,14 @@
     }
 
     const now = audio.context.currentTime;
-    audio.master.gain.setTargetAtTime(state.volume, now, 0.015);
-    audio.dry.gain.setTargetAtTime(0.95 - state.reverb * 0.32, now, 0.015);
-    audio.reverbGain.gain.setTargetAtTime(state.reverb * 0.82, now, 0.02);
-    audio.delayNode.delayTime.setTargetAtTime(state.delayTime, now, 0.02);
-    audio.delayGain.gain.setTargetAtTime(state.delay * 0.38, now, 0.02);
-    audio.feedback.gain.setTargetAtTime(state.delayFeedback, now, 0.02);
+    const wetLoad = state.reverb * 0.45 + state.delay * 0.28;
+    const wetGuard = 1 / (1 + wetLoad * 0.55);
+    smoothAudioParam(audio.master.gain, state.volume * 0.72, now, 0.02);
+    smoothAudioParam(audio.dry.gain, (0.92 - state.reverb * 0.24) * wetGuard, now, 0.02);
+    smoothAudioParam(audio.reverbGain.gain, state.reverb * 0.48 * wetGuard, now, 0.025);
+    smoothAudioParam(audio.delayNode.delayTime, state.delayTime, now, 0.025);
+    smoothAudioParam(audio.delayGain.gain, state.delay * 0.26 * wetGuard, now, 0.025);
+    smoothAudioParam(audio.feedback.gain, Math.min(0.72, state.delayFeedback), now, 0.025);
 
     const impulseSize = state.reverbSize.toFixed(2);
     if (audio.impulseSize !== impulseSize) {
@@ -1396,18 +1404,19 @@
 
     const pitchNumber = pitchNumberForColor(colorIndex);
     const frequency = 440 * 2 ** ((pitchNumber - 69) / 12);
-    playInstrumentTone(frequency, clamp(col / Math.max(1, state.cols - 1), 0, 1), row, gainScale);
+    playInstrumentTone(frequency, row, gainScale);
   }
 
-  function playInstrumentTone(frequency, panValue, row, gainScale) {
+  function playInstrumentTone(frequency, row, gainScale) {
     const ac = audio.context;
     const now = ac.currentTime;
     const preset = getInstrumentPreset();
     const duration = preset.release + (1 - clamp(row / Math.max(1, state.rows), 0, 1)) * preset.rowRelease;
     const voice = ac.createGain();
     const filter = ac.createBiquadFilter();
-    const pan = ac.createStereoPanner ? ac.createStereoPanner() : null;
-    const gain = Math.min(0.34, preset.gain * gainScale);
+    const eventGain = clamp(gainScale, 0, 1);
+    const outputTrim = preset.outputTrim ?? 1;
+    const gain = Math.min(0.22, preset.gain * eventGain * outputTrim);
 
     filter.type = "lowpass";
     filter.frequency.setValueAtTime(Math.min(12000, frequency * (4 + state.tone * preset.toneOpen)), now);
@@ -1422,15 +1431,8 @@
     voice.gain.exponentialRampToValueAtTime(gain * preset.decayLevel, now + preset.decay);
     voice.gain.exponentialRampToValueAtTime(0.0001, now + duration);
 
-    if (pan) {
-      pan.pan.setValueAtTime(panValue * 1.5 - 0.75, now);
-      voice.connect(filter);
-      filter.connect(pan);
-      pan.connect(audio.input);
-    } else {
-      voice.connect(filter);
-      filter.connect(audio.input);
-    }
+    voice.connect(filter);
+    filter.connect(audio.input);
 
     for (const partial of preset.partials) {
       const osc = ac.createOscillator();
@@ -1447,7 +1449,7 @@
 
     const noise = makeNoise(ac, preset.noiseTime);
     const noiseGain = ac.createGain();
-    noiseGain.gain.setValueAtTime(preset.noiseGain * gainScale, now);
+    noiseGain.gain.setValueAtTime(preset.noiseGain * eventGain * outputTrim, now);
     noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + preset.noiseTime);
     noise.connect(noiseGain);
     noiseGain.connect(voice);
@@ -1457,7 +1459,6 @@
     window.setTimeout(() => {
       voice.disconnect();
       filter.disconnect();
-      if (pan) pan.disconnect();
     }, (duration + 0.3) * 1000);
   }
 
@@ -1491,7 +1492,7 @@
   }
 
   function getDefaultInstrumentPresets() {
-    return {
+    const defaults = {
       softPiano: {
         label: "Soft piano",
         attack: 0.006,
@@ -1554,6 +1555,7 @@
         ],
       },
     };
+    return normalizeInstrumentPresetLevels(defaults);
   }
 
   async function loadInstrumentPresets() {
@@ -1568,7 +1570,7 @@
         throw new Error("Missing presets");
       }
 
-      instrumentPresets = sanitizeInstrumentPresets(config.presets);
+      instrumentPresets = normalizeInstrumentPresetLevels(sanitizeInstrumentPresets(config.presets));
       if (config.default && instrumentPresets[config.default]) {
         state.instrument = config.default;
       } else if (!instrumentPresets[state.instrument]) {
@@ -1658,7 +1660,7 @@
     state.reverbSize = clamp(Number(el.reverbSize.value), 0.1, 5);
     state.delay = clamp(Number(el.delayAmount.value), 0, 1);
     state.delayTime = clamp(Number(el.delayTime.value), 0.04, 5);
-    state.delayFeedback = clamp(Number(el.delayFeedback.value), 0, 0.85);
+    state.delayFeedback = clamp(Number(el.delayFeedback.value), 0, 0.72);
     for (const bug of state.bugs) {
       if (bug.aiType === "chameleon") {
         bug.colorShiftInterval = state.chameleonShift;
@@ -1875,6 +1877,42 @@
 
   function clampInt(value, min, max) {
     return Math.max(min, Math.min(max, Math.floor(value)));
+  }
+
+  function smoothAudioParam(param, target, now, timeConstant) {
+    if (!param) return;
+    const current = Number.isFinite(param.value) ? param.value : target;
+    param.cancelScheduledValues(now);
+    param.setValueAtTime(current, now);
+    param.setTargetAtTime(target, now, timeConstant);
+  }
+
+  function normalizeInstrumentPresetLevels(presets) {
+    const normalized = {};
+    for (const [id, preset] of Object.entries(presets)) {
+      normalized[id] = {
+        ...preset,
+        outputTrim: computePresetOutputTrim(preset),
+      };
+    }
+    return normalized;
+  }
+
+  function computePresetOutputTrim(preset) {
+    const partialEnergy = Math.sqrt(
+      preset.partials.reduce((sum, partial) => {
+        return sum + (partial.gain * waveformEnergy(partial.type)) ** 2;
+      }, 0),
+    );
+    const estimatedLevel = preset.gain * Math.max(1, partialEnergy) + preset.noiseGain * 0.8;
+    return Math.min(1, 0.2 / Math.max(0.2, estimatedLevel));
+  }
+
+  function waveformEnergy(type) {
+    if (type === "sawtooth") return 1.28;
+    if (type === "square") return 1.18;
+    if (type === "triangle") return 0.92;
+    return 1;
   }
 
   function speed(vx, vy) {
