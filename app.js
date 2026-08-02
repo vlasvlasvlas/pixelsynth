@@ -22,6 +22,111 @@
 
   const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
+  const TRANSLATIONS = {
+    en: {
+      'start-welcome': 'Welcome to Pixelsynth Paint.',
+      'start-button': 'Click here to Start',
+      'btn-settings': '<u>S</u>ettings',
+      'btn-clear': '<u>C</u>lear',
+      'btn-clear-polygon': 'Clear Poly<u>g</u>on',
+      'btn-random': '<u>R</u>andom',
+      'btn-auto-random': '<u>A</u>uto-Random',
+      'btn-info': '<u>H</u>elp',
+      'fullscreen-title': 'Full Screen',
+      'tool-pencil': 'Pencil',
+      'tool-bucket': 'Fill Bucket',
+      'tool-line': 'Line',
+      'tool-circle': 'Circle',
+      'tool-polygon': 'Define Polygon Area',
+      'tool-launch': 'Launch Ball',
+      'tool-wanderer': 'Wanderer Bug',
+      'tool-coward': 'Coward Bug',
+      'tool-chameleon': 'Chameleon Bug',
+      'settings-title': 'Settings',
+      'legend-bugs': 'Bugs (AI)',
+      'legend-grid': 'Grid & Physics',
+      'legend-instruments': 'Instruments',
+      'label-speed': 'Speed',
+      'label-chameleon-shift': 'Chameleon shift (s)',
+      'label-life': 'Life',
+      'btn-clear-bugs': 'Clear Bugs',
+      'bugs-note': 'Bugs have personality: Wanderer, Coward or Chameleon.',
+      'label-grid-size': 'Grid size',
+      'label-ball-speed': 'Ball speed',
+      'label-ball-radius': 'Ball radius',
+      'label-bounce': 'Bounce',
+      'label-friction': 'Friction',
+      'label-auto-random-interval': 'Auto-Random Interval (s)',
+      'btn-add-ball': 'Add Ball',
+      'status-cells': 'Cells:',
+      'status-balls': 'Balls:',
+      'status-bugs': 'Bugs:',
+      'info-title': 'Help',
+      'info-p1': '<strong>Pixelsynth Paint</strong>',
+      'info-p2': 'This project is a faithful and creative adaptation of the original Max for Live idea, with the benefit of being fully accessible from any browser.',
+      'info-p3': 'Project repository: <a href="https://github.com/vlasvlasvlas/pixelsynth" target="_blank" style="color: blue;">vlasvlasvlas/pixelsynth</a>',
+      'info-p4': 'Thanks to the original Ableton version: <a href="https://github.com/little-scale/littlescale-max-patches/blob/master/little-scale.breakoutesque.amxd" target="_blank" style="color: blue;">little-scale.breakoutesque.amxd</a>',
+      'info-p5': 'Draw on the grid, launch balls and create pixel-art bugs to generate music.',
+      'info-p6': '<strong>Tools:</strong> Use pencil, bucket, line or circle.',
+      'info-p7': '<strong>Bugs:</strong><br/>- Wanderers: Walk randomly.<br/>- Cowards: Flee from balls.<br/>- Chameleon: Changes color every N seconds and paints its trail.',
+      'run-pause': 'Pause',
+      'run-run': 'Run',
+      'lang-switch': 'Español',
+    },
+    es: {
+      'start-welcome': 'Bienvenido a Pixelsynth Paint.',
+      'start-button': 'Haz clic aquí para Iniciar',
+      'btn-settings': '<u>C</u>onfiguración',
+      'btn-clear': '<u>L</u>impiar',
+      'btn-clear-polygon': 'Limpiar Polí<u>g</u>ono',
+      'btn-random': '<u>R</u>andom',
+      'btn-auto-random': '<u>A</u>uto-Random',
+      'btn-info': '<u>A</u>yuda',
+      'fullscreen-title': 'Pantalla Completa',
+      'tool-pencil': 'Lápiz (Pencil)',
+      'tool-bucket': 'Balde (Fill)',
+      'tool-line': 'Línea (Line)',
+      'tool-circle': 'Círculo (Circle)',
+      'tool-polygon': 'Definir Área Poligonal (Polygon Limits)',
+      'tool-launch': 'Lanzar Pelota (Ball)',
+      'tool-wanderer': 'Bicho Errante (Wanderer)',
+      'tool-coward': 'Bicho Cobarde (Coward)',
+      'tool-chameleon': 'Bicho Camaleón (Chameleon)',
+      'settings-title': 'Configuración',
+      'legend-bugs': 'Bichos (IA)',
+      'legend-grid': 'Grid & Físicas',
+      'legend-instruments': 'Instrumentos',
+      'label-speed': 'Velocidad',
+      'label-chameleon-shift': 'Camaleón cambio (s)',
+      'label-life': 'Vida',
+      'btn-clear-bugs': 'Limpiar Bichos',
+      'bugs-note': 'Los bichos tienen personalidad: Errante, Cobarde o Glotón.',
+      'label-grid-size': 'Tamaño de cuadrícula',
+      'label-ball-speed': 'Velocidad de pelota',
+      'label-ball-radius': 'Radio de pelota',
+      'label-bounce': 'Rebote',
+      'label-friction': 'Fricción',
+      'label-auto-random-interval': 'Auto-Random Intervalo (s)',
+      'btn-add-ball': 'Añadir Pelota',
+      'status-cells': 'Celdas:',
+      'status-balls': 'Pelotas:',
+      'status-bugs': 'Bichos:',
+      'info-title': 'Ayuda',
+      'info-p1': '<strong>Pixelsynth Paint</strong>',
+      'info-p2': 'El proyecto es una adaptación fiel y creativa de la idea original en Max for Live, con el beneficio de ser completamente accesible desde cualquier navegador.',
+      'info-p3': 'Repositorio del proyecto: <a href="https://github.com/vlasvlasvlas/pixelsynth" target="_blank" style="color: blue;">vlasvlasvlas/pixelsynth</a>',
+      'info-p4': 'Agradecimientos a la versión original de Ableton: <a href="https://github.com/little-scale/littlescale-max-patches/blob/master/little-scale.breakoutesque.amxd" target="_blank" style="color: blue;">little-scale.breakoutesque.amxd</a>',
+      'info-p5': 'Dibuja en la cuadrícula, lanza pelotas y crea bichos pixel-art para generar música.',
+      'info-p6': '<strong>Herramientas:</strong> Usa el lápiz, balde, línea o círculo.',
+      'info-p7': '<strong>Bichos:</strong><br/>- Errantes: Caminan al azar.<br/>- Cobardes: Huyen de las pelotas.<br/>- Camaleón: Cambia color cada N segundos y pinta su rastro.',
+      'run-pause': 'Pausar',
+      'run-run': 'Correr',
+      'lang-switch': 'English',
+    },
+  };
+
+  let currentLang = localStorage.getItem('pixelsynth-lang') || 'en';
+
   const el = {
     canvas: document.querySelector("#stage"),
     startScreen: document.querySelector("#startScreen"),
@@ -79,6 +184,7 @@
     ballCount: document.querySelector("#ballCount"),
     bugCount: document.querySelector("#bugCount"),
     modeButtons: Array.from(document.querySelectorAll("[data-mode]")),
+    langButton: document.querySelector("#langButton"),
   };
 
   const ctx = el.canvas.getContext("2d", { alpha: false });
@@ -1718,7 +1824,27 @@
   }
 
   function updateRunButton() {
-    el.runButton.textContent = state.running ? "Pausar" : "Correr";
+    const t = TRANSLATIONS[currentLang];
+    el.runButton.textContent = state.running ? t['run-pause'] : t['run-run'];
+  }
+
+  function setLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('pixelsynth-lang', lang);
+    document.documentElement.lang = lang;
+    const t = TRANSLATIONS[lang];
+    for (const node of document.querySelectorAll('[data-i18n]')) {
+      const key = node.dataset.i18n;
+      if (t[key] !== undefined) node.innerHTML = t[key];
+    }
+    for (const node of document.querySelectorAll('[data-i18n-title]')) {
+      const key = node.dataset.i18nTitle;
+      if (t[key] !== undefined) node.title = t[key];
+    }
+    if (el.langButton) {
+      el.langButton.textContent = t['lang-switch'];
+    }
+    updateRunButton();
   }
 
   function bindControls() {
@@ -1740,6 +1866,9 @@
     el.infoButton.addEventListener("click", openInfo);
     el.closeInfoButton.addEventListener("click", closeOverlays);
     el.backdrop.addEventListener("click", closeOverlays);
+    el.langButton?.addEventListener("click", () => {
+      setLanguage(currentLang === "en" ? "es" : "en");
+    });
     el.fullscreenButton.addEventListener("click", toggleFullscreen);
     el.runButton.addEventListener("click", () => {
       state.running = !state.running;
@@ -1931,6 +2060,7 @@
   populateInstrumentSelect();
   createPalette();
   bindControls();
+  setLanguage(currentLang);
   loadInstrumentPresets();
   updateAllControls();
 
